@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
-from .database import Base, SessionLocal, engine
+from .database import Base, SessionLocal, engine, get_db
+from .routes import users, clinics
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,13 +18,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Register routers
+app.include_router(users.router, prefix="/api/v1", tags=["auth", "users"])
+app.include_router(clinics.router, prefix="/api/v1", tags=["clinics"])
 
 
 @app.get("/health")
