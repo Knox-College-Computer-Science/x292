@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
 from .database import Base, SessionLocal, engine
+from .services.clinical_api import fetch_trials
+from .services.cleaner import clean_trial
 
 Base.metadata.create_all(bind=engine)
 
@@ -30,6 +32,20 @@ def get_db():
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
+# Fetch clinical trial data from ClinicalTrials.gov based on a condition
+@app.get("/trials")
+def get_trials(condition: str = "diabetes"):
+    # Get raw trial data from the external API
+    raw_data = fetch_trials(condition)
+
+    # Pull out the list of studies from the response
+    studies = raw_data.get("studies", [])
+
+    # Clean each study into a simpler format for the frontend
+    cleaned = [clean_trial(study) for study in studies]
+
+    # Return the cleaned trial list as JSON
+    return cleaned
 
 @app.get("/items", response_model=list[schemas.TodoItemRead])
 def list_items(db: Session = Depends(get_db)):

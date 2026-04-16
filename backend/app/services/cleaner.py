@@ -1,3 +1,5 @@
+#takes one raw study from the API and turns it into a smaller, simpler version.
+
 def clean_trial(study: dict):
     protocol = study.get("protocolSection", {})
     identification = protocol.get("identificationModule", {})
