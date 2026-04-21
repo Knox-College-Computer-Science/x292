@@ -1,0 +1,49 @@
+.home-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: 1440px;
+  height: 88px;
+  background: var(--main-color);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 19px;
+}
+
+.nav-home {
+  margin-left: 42px;
+}
+
+.nav-experience {
+  margin-left: 17px;
+  margin-top: 3px;
+}
+
+.nav-analytics {
+  margin-left: 552px;
+}
+
+.nav-trials {
+  margin-left: 21px;
+}
+
+.nav-profile {
+  margin-left: 21px;
+}
+
+.experience-select {
+  width: 85px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.atlas-button.experience-button {
+  width: 85px;
+  height: 19px;
+  min-height: 19px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  line-height: 1;
+}

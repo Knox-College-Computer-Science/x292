@@ -1,0 +1,32 @@
+.home-hero-stage {
+  margin-top: 95px;
+  width: 1440px;
+  height: 798px;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.hero-box {
+  grid-area: 1 / 1;
+  width: 745px;
+  height: 798px;
+  margin-left: 607px;
+  padding: 0;
+  background:
+    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    var(--accent-color);
+}
+
+.hero-title {
+  grid-area: 1 / 1;
+  margin: 0;
+  margin-left: 125px;
+  margin-top: 329px;
+  font-size: 200px;
+  font-weight: 700;
+  line-height: 200px;
+  letter-spacing: 1px;
+  color: var(--accent-color);
+  white-space: normal;
+  max-width: 1200px;
+}

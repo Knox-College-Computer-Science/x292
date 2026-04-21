@@ -1,0 +1,19 @@
+.trial-rating {
+  width: 210px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--accent-color);
+  color: var(--main-color);
+  text-align: center;
+}
+
+.trial-rating-label {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.trial-rating-value {
+  font-size: 28px;
+  font-weight: 700;
+}

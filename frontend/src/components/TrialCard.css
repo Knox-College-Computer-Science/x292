@@ -1,0 +1,77 @@
+.trial-card {
+  position: relative;
+  width: 1111px;
+  height: 606px;
+  padding: 0;
+  border-radius: 12px;
+  background:
+    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    var(--accent-color);
+  color: #ffffff;
+}
+
+.trial-card-title {
+  position: absolute;
+  top: 13px;
+  left: 118px;
+  margin: 0 0 64px;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.trial-card-grid {
+  position: absolute;
+  top: 77px;
+  left: 118px;
+  display: flex;
+  gap: 52px;
+}
+
+.trial-visual-box {
+  width: 520px;
+  height: 475px;
+  background: rgba(248, 221, 164, 0.4);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.trial-details-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.trial-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.trial-detail-label,
+.trial-detail-value {
+  min-width: 0;
+}
+
+.trial-detail-value-right {
+  text-align: right;
+}
+
+.trial-more-info-button {
+  width: 165px;
+  height: 50px;
+  margin-top: 38px;
+}
+
+.trial-rating {
+  position: absolute;
+  right: 50px;
+  bottom: 54px;
+}

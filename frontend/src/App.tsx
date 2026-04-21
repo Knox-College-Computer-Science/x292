@@ -1,114 +1,118 @@
-import { FormEvent, useEffect, useState } from "react";
-import { createItem, deleteItem, listItems, TodoItem, updateItem } from "./api";
+import { useState } from "react";
+import HomePage from "./components/HomePage";
+import ProfileSetupPage from "./components/ProfileSetupPage";
+import BlankPage from "./components/BlankPage";
+import TrialPage from "./components/TrialPage";
+import TrialMoreDetailsPage from "./components/TrialMoreDetailsPage";
+import AllTrialsPage from "./components/AllTrialsPage";
+import UserAnalyticsPage from "./components/UserAnalyticsPage";
+import "./components/HomeButtons.css";
+
+type AppView =
+  | "home"
+  | "analytics"
+  | "trials"
+  | "trial-more-details"
+  | "profile"
+  | "all-trials";
+type ExperienceMode = "clinics" | "participants";
 
 export default function App() {
-  const [items, setItems] = useState<TodoItem[]>([]);
-  const [title, setTitle] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<AppView>("home");
+  const [experience, setExperience] = useState<ExperienceMode>("participants");
 
-  useEffect(() => {
-    void loadItems();
-  }, []);
+  const pageLabel = `[${experience === "clinics" ? "clinic" : "participant"} - ${view}]`;
 
-  async function loadItems() {
-    try {
-      setError(null);
-      setLoading(true);
-      setItems(await listItems());
-    } catch {
-      setError("Unable to load items from the backend.");
-    } finally {
-      setLoading(false);
-    }
+  if (view === "home") {
+    return (
+      <HomePage
+        selectedExperience={experience}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
+        onNavigateHome={() => setView("home")}
+        onSelectExperience={setExperience}
+      />
+    );
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!title.trim()) return;
-
-    try {
-      const created = await createItem(title.trim());
-      setItems((current) => [created, ...current]);
-      setTitle("");
-    } catch {
-      setError("Unable to create item.");
-    }
+  if (view === "profile" && experience === "participants") {
+    return (
+      <ProfileSetupPage
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
+        onSelectExperience={setExperience}
+      />
+    );
   }
 
-  async function toggleItem(item: TodoItem) {
-    try {
-      const updated = await updateItem(item.id, !item.completed);
-      setItems((current) =>
-        current.map((currentItem) =>
-          currentItem.id === updated.id ? updated : currentItem,
-        ),
-      );
-    } catch {
-      setError("Unable to update item.");
-    }
+  if (view === "trials" && experience === "participants") {
+    return (
+      <TrialPage
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
+        onNavigateMoreDetails={() => setView("trial-more-details")}
+        onSelectExperience={setExperience}
+      />
+    );
   }
 
-  async function removeItem(id: number) {
-    try {
-      await deleteItem(id);
-      setItems((current) => current.filter((item) => item.id !== id));
-    } catch {
-      setError("Unable to delete item.");
-    }
+  if (view === "trial-more-details" && experience === "participants") {
+    return (
+      <TrialMoreDetailsPage
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
+        onSelectExperience={setExperience}
+      />
+    );
+  }
+
+  if (view === "all-trials" && experience === "participants") {
+    return (
+      <AllTrialsPage
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
+        onNavigateMoreDetails={() => setView("trial-more-details")}
+        onSelectExperience={setExperience}
+      />
+    );
+  }
+
+  if (view === "analytics" && experience === "participants") {
+    return (
+      <UserAnalyticsPage
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
+        onNavigateMoreDetails={() => setView("trial-more-details")}
+        onSelectExperience={setExperience}
+      />
+    );
   }
 
   return (
-    <main className="app-shell">
-      <section className="card">
-        <p className="eyebrow">Class project starter</p>
-        <h1>React + FastAPI + SQLite</h1>
-        <p className="description">
-          Add items below to confirm the frontend is talking to the backend.
-        </p>
-
-        <form className="form" onSubmit={handleSubmit}>
-          <input
-            aria-label="New item title"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Add a new task"
-          />
-          <button type="submit">Add</button>
-        </form>
-
-        {error ? <p className="error">{error}</p> : null}
-
-        <div className="list-wrap">
-          {loading ? (
-            <p>Loading…</p>
-          ) : items.length === 0 ? (
-            <p>No items yet.</p>
-          ) : (
-            <ul className="list">
-              {items.map((item) => (
-                <li key={item.id} className={item.completed ? "done" : ""}>
-                  <button
-                    type="button"
-                    className="toggle"
-                    onClick={() => void toggleItem(item)}
-                  >
-                    {item.completed ? "✓" : "○"}
-                  </button>
-                  <span>{item.title}</span>
-                  <button
-                    type="button"
-                    className="delete"
-                    onClick={() => void removeItem(item.id)}
-                  >
-                    Delete
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
-    </main>
+    <BlankPage
+      label={pageLabel}
+      selectedExperience={experience}
+      onNavigateHome={() => setView("home")}
+      onNavigateProfile={() => setView("profile")}
+      onNavigateAnalytics={() => setView("analytics")}
+      onNavigateAllTrials={() => setView("all-trials")}
+      onSelectExperience={setExperience}
+    />
   );
 }

@@ -1,0 +1,36 @@
+.info-section {
+  position: relative;
+  width: 1440px;
+  height: 468px;
+  margin-top: 47px;
+}
+
+.info-box {
+  width: 1128px;
+  height: 468px;
+  margin-left: 156px;
+  padding-top: 39px;
+  border-radius: 8px;
+  background: var(--main-color);
+}
+
+.info-headings {
+  display: flex;
+  margin-top: 0;
+}
+
+.info-heading {
+  position: relative;
+  margin: 0;
+  font-size: 48px;
+  font-weight: 700;
+  color: #f9f6f0;
+}
+
+.features-heading {
+  margin-left: 54px;
+}
+
+.privacy-heading {
+  margin-left: 270px;
+}

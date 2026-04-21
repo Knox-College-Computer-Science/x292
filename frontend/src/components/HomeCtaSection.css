@@ -1,0 +1,32 @@
+.help-section {
+  position: relative;
+  margin-top: 259px;
+  width: 1440px;
+  height: 1116px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    var(--accent-color);
+}
+
+.help-title {
+  position: relative;
+  width: 1042px;
+  margin: 90px auto 0;
+  text-align: center;
+  font-size: 128px;
+  font-weight: 700;
+  line-height: 128px;
+  letter-spacing: 1px;
+  color: #000;
+}
+
+.atlas-button.join-button {
+  position: relative;
+  display: block;
+  width: 466px;
+  height: 187px;
+  min-height: 187px;
+  margin: 60px auto 0;
+  font-size: 84px;
+}
