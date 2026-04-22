@@ -129,6 +129,7 @@ class Trial(Base):
     __tablename__ = "trials"
 
     id                      = Column(String, primary_key=True, default=gen_uuid)
+    nct_id = Column(String, unique=True, nullable=True, index=True)  # ClinicalTrials.gov ID
     clinic_id               = Column(String, ForeignKey("clinic_profiles.id"), nullable=True)
     created_at              = Column(DateTime(timezone=True), server_default=func.now())
     updated_at              = Column(DateTime(timezone=True), onupdate=func.now())

@@ -140,6 +140,7 @@ class ClinicProfileResponse(ClinicProfileCreate):
 
 class TrialCreate(BaseModel):
     """POST /trials — create a new trial (clinic or admin)"""
+    nct_id: Optional[str] = None  
     title: str
     condition: str
     category: Optional[str] = None
@@ -216,3 +217,22 @@ class AnalyticsResponse(BaseModel):
     total_passes: int
     save_rate: float                        # saves / views * 100
     category_breakdown: Dict[str, int]     # { "Oncology": 12, "Cardiology": 8, ... }
+    
+    
+    
+class TodoItemBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+
+class TodoItemCreate(TodoItemBase):
+    pass
+
+class TodoItemUpdate(TodoItemBase):
+    completed: Optional[bool] = None
+
+class TodoItemRead(TodoItemBase):
+    id: int
+    completed: bool
+
+    class Config:
+        orm_mode = True
