@@ -7,6 +7,7 @@ type AllTrialsPageProps = {
   onNavigateProfile: () => void;
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
+  onNavigateFindTrials: () => void;
   onNavigateMoreDetails: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
@@ -25,37 +26,36 @@ const statusTrials = [
     id: 1,
     title: "Title",
     date: "[Date, and other info]",
-    status: "",
   },
   {
     id: 2,
-    title: "",
-    date: "",
-    status: "",
+    title: "Title",
+    date: "[Date, and other info]",
   },
   {
     id: 3,
-    title: "",
-    date: "",
-    status: "",
+    title: "Title",
+    date: "[Date, and other info]",
   },
   {
     id: 4,
-    title: "",
-    date: "",
-    status: "",
+    title: "Title",
+    date: "[Date, and other info]",
   },
   {
     id: 5,
-    title: "",
-    date: "",
-    status: "",
+    title: "Title",
+    date: "[Date, and other info]",
   },
   {
     id: 6,
-    title: "",
-    date: "",
-    status: "",
+    title: "Title",
+    date: "[Date, and other info]",
+  },
+  {
+    id: 7,
+    title: "Title",
+    date: "[Date, and other info]",
   },
 ];
 
@@ -65,6 +65,7 @@ export default function AllTrialsPage({
   onNavigateProfile,
   onNavigateAnalytics,
   onNavigateAllTrials,
+  onNavigateFindTrials,
   onNavigateMoreDetails,
   onSelectExperience,
 }: AllTrialsPageProps) {
@@ -106,10 +107,7 @@ export default function AllTrialsPage({
               className={`all-trials-status-entry all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
             >
               <div className="all-trials-status-title">{trial.title}</div>
-              <div className="all-trials-status-date-status">
-                <div className="all-trials-status-date">{trial.date}</div>
-                <div className="all-trials-status-status">{trial.status}</div>
-              </div>
+              <div className="all-trials-status-date">{trial.date}</div>
               <button
                 type="button"
                 className="atlas-button all-trials-status-more-details"
@@ -119,6 +117,23 @@ export default function AllTrialsPage({
               </button>
             </div>
           ))}
+        </div>
+
+        <div className="all-trials-actions">
+          <button
+            type="button"
+            className="atlas-button atlas-button-variant-back all-trials-back"
+            onClick={onNavigateFindTrials}
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            className="atlas-button atlas-button-variant-3 all-trials-find-trials"
+            onClick={onNavigateFindTrials}
+          >
+            Find Trials
+          </button>
         </div>
       </section>
     </main>

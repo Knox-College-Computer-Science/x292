@@ -1,0 +1,75 @@
+.clinic-more-analytics-page {
+  width: 1440px;
+  min-height: 2334px;
+  margin: 0 auto;
+  background: var(--accent-color);
+}
+
+.clinic-more-analytics-content {
+  width: 1280px;
+  margin: 67px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.clinic-more-analytics-card {
+  width: 1280px;
+  min-height: 740px;
+  border-radius: 34px;
+  padding: 34px 68px;
+  background:
+    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    var(--accent-color);
+}
+
+.clinic-more-analytics-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 58px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.clinic-more-analytics-columns {
+  margin-top: 66px;
+  display: flex;
+  justify-content: space-between;
+  gap: 60px;
+}
+
+.clinic-more-analytics-left,
+.clinic-more-analytics-right {
+  color: #ffffff;
+  font-size: 58px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.clinic-more-analytics-left p,
+.clinic-more-analytics-right p {
+  margin: 0;
+}
+
+.clinic-more-analytics-left p + p,
+.clinic-more-analytics-right p + p {
+  margin-top: 44px;
+}
+
+.clinic-more-analytics-right {
+  text-align: right;
+}
+
+.clinic-more-analytics-actions {
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.clinic-more-analytics-back,
+.clinic-more-analytics-all-trials {
+  width: 165px;
+  height: 50px;
+}

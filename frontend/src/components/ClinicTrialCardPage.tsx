@@ -1,29 +1,28 @@
 import HomeNavBar from "./HomeNavBar";
-import Arrows from "./Arrows";
-import UserAnalyticsCard from "./UserAnalyticsCard";
-import "./UserAnalyticsPage.css";
+import ClinicTrialCard from "./ClinicTrialCard";
+import "./ClinicTrialCardPage.css";
 
-type UserAnalyticsPageProps = {
+type ClinicTrialCardPageProps = {
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
-  onNavigateMoreDetails: () => void;
+  onSubmitTrial: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-export default function UserAnalyticsPage({
+export default function ClinicTrialCardPage({
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
   onNavigateAnalytics,
   onNavigateAllTrials,
-  onNavigateMoreDetails,
+  onSubmitTrial,
   onSelectExperience,
-}: UserAnalyticsPageProps) {
+}: ClinicTrialCardPageProps) {
   return (
-    <main className="user-analytics-page">
+    <main className="clinic-trial-card-page">
       <HomeNavBar
         selectedExperience={selectedExperience}
         onNavigateHome={onNavigateHome}
@@ -32,14 +31,23 @@ export default function UserAnalyticsPage({
         onNavigateAllTrials={onNavigateAllTrials}
         onSelectExperience={onSelectExperience}
       />
+
       <section
-        className="user-analytics-page-content"
-        aria-label="User analytics"
+        className="clinic-trial-card-page-content"
+        aria-label="Enter trial information"
       >
-        <UserAnalyticsCard onNavigateMoreDetails={onNavigateMoreDetails} />
-        <div className="user-analytics-page-arrows">
-          <Arrows />
-        </div>
+        <h1 className="clinic-trial-card-page-title">
+          Enter trial information:
+        </h1>
+        <ClinicTrialCard />
+        <button
+          type="submit"
+          form="clinic-trial-card-form"
+          className="atlas-button atlas-button-variant-3 clinic-trial-card-submit"
+          onClick={onSubmitTrial}
+        >
+          Submit
+        </button>
       </section>
     </main>
   );

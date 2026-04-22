@@ -1,0 +1,37 @@
+.arrows {
+  width: 125px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 41px;
+}
+
+.arrows-button {
+  width: 42px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.arrows-shape {
+  display: block;
+  width: 0;
+  height: 0;
+}
+
+.arrows-shape-left {
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-right: 42px solid var(--main-color);
+}
+
+.arrows-shape-right {
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-left: 42px solid var(--main-color);
+}

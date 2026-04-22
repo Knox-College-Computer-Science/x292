@@ -7,7 +7,7 @@ type TrialCardProps = {
 
 export default function TrialCard({ onNavigateMoreDetails }: TrialCardProps) {
   return (
-    <section className="trial-card" aria-label="Trial details form">
+    <section className="trial-card" aria-label="Trial details">
       <h2 className="trial-card-title">Title</h2>
 
       <div className="trial-card-grid">
@@ -16,42 +16,36 @@ export default function TrialCard({ onNavigateMoreDetails }: TrialCardProps) {
         <div className="trial-details-panel">
           <div className="trial-detail-row">
             <span className="trial-detail-label">Study Type</span>
-            <span className="trial-detail-value">Placeholder</span>
           </div>
           <div className="trial-detail-row">
-            <span className="trial-detail-label">Date</span>
-            <span className="trial-detail-value">Placeholder</span>
+            <span className="trial-detail-date">[00/00/0000]</span>
           </div>
           <div className="trial-detail-row trial-detail-row-split">
             <span className="trial-detail-label">Location</span>
-            <span className="trial-detail-value trial-detail-value-right">
-              Time
-            </span>
+            <span className="trial-detail-meta-right">[time]</span>
           </div>
           <div className="trial-detail-row">
             <span className="trial-detail-label">Compensation</span>
-            <span className="trial-detail-value">Placeholder</span>
           </div>
           <div className="trial-detail-row">
             <span className="trial-detail-label">Time Commitment</span>
-            <span className="trial-detail-value">Placeholder</span>
           </div>
           <div className="trial-detail-row">
-            <span className="trial-detail-label">Remote or In-Person</span>
-            <span className="trial-detail-value">Placeholder</span>
+            <span className="trial-detail-label">Remote/in person</span>
           </div>
 
-          <button
-            type="button"
-            className="atlas-button atlas-button-variant-1 trial-more-info-button"
-            onClick={onNavigateMoreDetails}
-          >
-            More Info
-          </button>
+          <div className="trial-actions-row">
+            <button
+              type="button"
+              className="atlas-button atlas-button-variant-1 trial-more-info-button"
+              onClick={onNavigateMoreDetails}
+            >
+              More Info
+            </button>
+            <TrialRating value="00" />
+          </div>
         </div>
       </div>
-
-      <TrialRating />
     </section>
   );
 }
