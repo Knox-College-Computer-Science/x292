@@ -1,16 +1,16 @@
-.user-analytics-page {
+.clinic-analytics-page {
   width: 1440px;
   min-height: 2334px;
   margin: 0 auto;
   background: var(--accent-color);
 }
 
-.user-analytics-page-content {
+.clinic-analytics-page-content {
   width: 1111px;
   margin: 67px auto 0;
 }
 
-.user-analytics-page-arrows {
+.clinic-analytics-page-arrows {
   margin-top: 16px;
   display: flex;
   justify-content: center;

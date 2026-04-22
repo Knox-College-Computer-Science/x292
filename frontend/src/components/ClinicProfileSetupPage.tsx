@@ -1,29 +1,26 @@
 import HomeNavBar from "./HomeNavBar";
-import Arrows from "./Arrows";
-import UserAnalyticsCard from "./UserAnalyticsCard";
-import "./UserAnalyticsPage.css";
+import ClinicProfileSetupCard from "./ClinicProfileSetupCard";
+import "./ClinicProfileSetupPage.css";
 
-type UserAnalyticsPageProps = {
+type ClinicProfileSetupPageProps = {
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
-  onNavigateMoreDetails: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-export default function UserAnalyticsPage({
+export default function ClinicProfileSetupPage({
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
   onNavigateAnalytics,
   onNavigateAllTrials,
-  onNavigateMoreDetails,
   onSelectExperience,
-}: UserAnalyticsPageProps) {
+}: ClinicProfileSetupPageProps) {
   return (
-    <main className="user-analytics-page">
+    <main className="clinic-profile-page">
       <HomeNavBar
         selectedExperience={selectedExperience}
         onNavigateHome={onNavigateHome}
@@ -33,13 +30,21 @@ export default function UserAnalyticsPage({
         onSelectExperience={onSelectExperience}
       />
       <section
-        className="user-analytics-page-content"
-        aria-label="User analytics"
+        className="clinic-profile-page-content"
+        aria-label="Clinic profile setup"
       >
-        <UserAnalyticsCard onNavigateMoreDetails={onNavigateMoreDetails} />
-        <div className="user-analytics-page-arrows">
-          <Arrows />
-        </div>
+        <p className="clinic-profile-page-intro">
+          Please enter your organization information:
+        </p>
+        <ClinicProfileSetupCard />
+        <button
+          type="submit"
+          form="clinic-profile-setup-form"
+          className="atlas-button atlas-button-variant-3 clinic-profile-submit-button"
+          onClick={onNavigateAllTrials}
+        >
+          Submit
+        </button>
       </section>
     </main>
   );
