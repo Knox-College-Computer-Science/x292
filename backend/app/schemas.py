@@ -1,218 +1,137 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, Dict
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List
 from datetime import datetime
 
 
-# ---------------------------------------------------------------------------
-# Auth
-# ---------------------------------------------------------------------------
-
-class UserRegister(BaseModel):
-    """POST /auth/register"""
+# User schemas
+class UserCreate(BaseModel):
     email: EmailStr
-    password: str
-    role: str = "user"                      # "user" | "admin" | "clinic"
-
+    password: str = Field(..., min_length=6, max_length=72)
 
 class UserLogin(BaseModel):
-    """POST /auth/login"""
     email: EmailStr
     password: str
 
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-# ---------------------------------------------------------------------------
-# User Profile — mirrors 3 registration steps
-# ---------------------------------------------------------------------------
-
-class BasicInfoStep(BaseModel):
-    """Step 1 — Basic Info"""
-    full_name: str
-    phone: Optional[str] = None
-    location: Optional[str] = None
-    preferred_language: Optional[str] = "English"
-
-
-class HealthInfoStep(BaseModel):
-    """Step 2 — Health Info"""
-    age: Optional[int] = None
-    gender: Optional[str] = None
-    ethnicity: Optional[str] = None
-    health_conditions: Optional[str] = None
-    insurance_status: Optional[str] = None
-    consent_given: bool = False
-
-
-class PreferencesStep(BaseModel):
-    """Step 3 — Preferences"""
-    trial_interests: Optional[str] = None
-    time_commitment: Optional[str] = None
-    notification_preferences: Optional[str] = "Email"
-    travel_willingness: Optional[str] = None
-    participation_preference: Optional[str] = None
-
-
-class UserProfileCreate(BasicInfoStep, HealthInfoStep, PreferencesStep):
-    """Full profile — all 3 steps combined (used for final submit)"""
-    pass
-
-
-class UserProfileUpdate(BaseModel):
-    """PUT /users/me — partial update, all fields optional"""
-    full_name: Optional[str] = None
-    phone: Optional[str] = None
-    location: Optional[str] = None
-    preferred_language: Optional[str] = None
-    age: Optional[int] = None
-    gender: Optional[str] = None
-    ethnicity: Optional[str] = None
-    health_conditions: Optional[str] = None
-    insurance_status: Optional[str] = None
-    trial_interests: Optional[str] = None
-    time_commitment: Optional[str] = None
-    notification_preferences: Optional[str] = None
-    travel_willingness: Optional[str] = None
-    participation_preference: Optional[str] = None
-    profile_completed: Optional[bool] = None
-
-
-class PrivacySettingsUpdate(BaseModel):
-    """PUT /privacy — toggle which fields are used for matching"""
-    matching_fields_enabled: Dict[str, bool]
-
-
-class UserProfileResponse(BaseModel):
-    id: str
+class UserResponse(BaseModel):
+    id: int
     email: str
-    full_name: str
-    phone: Optional[str]
-    location: Optional[str]
-    preferred_language: Optional[str]
-    age: Optional[int]
-    gender: Optional[str]
-    ethnicity: Optional[str]
-    health_conditions: Optional[str]
-    insurance_status: Optional[str]
-    consent_given: bool
-    trial_interests: Optional[str]
-    time_commitment: Optional[str]
-    notification_preferences: Optional[str]
-    travel_willingness: Optional[str]
-    participation_preference: Optional[str]
-    matching_fields_enabled: Optional[Dict[str, bool]]
-    profile_completed: bool
     created_at: datetime
-
+    
     class Config:
         from_attributes = True
 
-
-# ---------------------------------------------------------------------------
-# Clinic Profile
-# ---------------------------------------------------------------------------
-
-class ClinicProfileCreate(BaseModel):
-    """POST /clinics"""
-    clinic_name: str
-    logo_url: Optional[str] = None
-    contact_person: Optional[str] = None
-    contact_email: EmailStr
-    contact_phone: Optional[str] = None
-    location: str
-    sponsor_institution: Optional[str] = None
-
-
-class ClinicProfileResponse(ClinicProfileCreate):
-    id: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# ---------------------------------------------------------------------------
-# Trial
-# ---------------------------------------------------------------------------
-
-class TrialCreate(BaseModel):
-    """POST /trials — create a new trial (clinic or admin)"""
-    title: str
+# Profile schemas
+class ProfileCreate(BaseModel):
+    age: int = Field(..., ge=18, le=120)
+    location_city: str
+    location_state: str
+    location_country: str = "United States"
     condition: str
-    category: Optional[str] = None
-    location: str
-    study_type: Optional[str] = None
-    study_description: Optional[str] = None
-    study_phase: Optional[str] = None
-    recruitment_status: str = "Recruiting"
-    compensation: Optional[str] = None      # nullable — "not available" shown on frontend
-    duration: Optional[str] = None
-    visit_frequency: Optional[str] = None
-    time_commitment: Optional[str] = None
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
-    eligibility_age_min: Optional[int] = None
-    eligibility_age_max: Optional[int] = None
-    eligibility_gender: str = "All"
-    eligibility_conditions: Optional[str] = None
-    eligibility_summary: Optional[str] = None
-    remote_eligible: bool = False
-    sponsor: Optional[str] = None
-    contact_link: Optional[str] = None
-    clinic_id: Optional[str] = None
+    max_distance_miles: int = Field(50, ge=0, le=500)
+    willing_to_travel: bool = False
+    preferred_phase: Optional[str] = None
+    preferred_type: Optional[str] = None
+    privacy_show_age: bool = True
+    privacy_show_location: bool = True
 
-
-class TrialResponse(TrialCreate):
-    id: str
-    views_count: int
-    saves_count: int
-    passes_count: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class TrialFilterParams(BaseModel):
-    """Query parameters for GET /trials"""
+class ProfileUpdate(BaseModel):
+    age: Optional[int] = Field(None, ge=18, le=120)
+    location_city: Optional[str] = None
+    location_state: Optional[str] = None
+    location_country: Optional[str] = None
     condition: Optional[str] = None
-    location: Optional[str] = None
-    status: Optional[str] = None           # Recruiting | etc.
-    phase: Optional[str] = None            # Phase 1 | Phase 2 | etc.
-    participation: Optional[str] = None    # Remote | In-person
+    max_distance_miles: Optional[int] = Field(None, ge=0, le=500)
+    willing_to_travel: Optional[bool] = None
+    preferred_phase: Optional[str] = None
+    preferred_type: Optional[str] = None
+    privacy_show_age: Optional[bool] = None
+    privacy_show_location: Optional[bool] = None
 
-
-# ---------------------------------------------------------------------------
-# Trial Interaction
-# ---------------------------------------------------------------------------
-
-class InteractionCreate(BaseModel):
-    """POST /interactions"""
-    trial_id: str
-    action: str                             # view | save | pass
-
-
-class InteractionResponse(BaseModel):
-    id: str
-    trial_id: str
-    user_id: str
-    action: str
-    created_at: datetime
-
+class ProfileResponse(BaseModel):
+    id: int
+    user_id: int
+    age: int
+    location_city: str
+    location_state: str
+    location_country: str
+    condition: str
+    max_distance_miles: int
+    willing_to_travel: bool
+    preferred_phase: Optional[str]
+    preferred_type: Optional[str]
+    privacy_show_age: bool
+    privacy_show_location: bool
+    updated_at: datetime
+    
     class Config:
         from_attributes = True
 
+# Trial schemas
+class TrialResponse(BaseModel):
+    id: int
+    nct_id: str
+    title: str
+    brief_summary: str
+    detailed_description: Optional[str]
+    condition: str
+    phase: Optional[str]
+    status: str
+    sponsor: Optional[str]
+    location_city: Optional[str]
+    location_state: Optional[str]
+    location_country: Optional[str]
+    location_facility: Optional[str]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    min_age: Optional[int]
+    max_age: Optional[int]
+    gender: Optional[str]
+    compensation: Optional[str]
+    is_remote: bool
+    start_date: Optional[datetime]
+    completion_date: Optional[datetime]
+    eligibility_criteria: Optional[str]
+    contact_email: Optional[str]
+    contact_phone: Optional[str]
+    match_reasons: Optional[List[str]] = []
+    distance_miles: Optional[float] = None
+    
+    class Config:
+        from_attributes = True
 
-# ---------------------------------------------------------------------------
-# Analytics
-# ---------------------------------------------------------------------------
+class TrialAction(BaseModel):
+    trial_id: int
+    action: str  # 'save' or 'pass'
 
-class AnalyticsResponse(BaseModel):
-    total_views: int
+class SavedTrialResponse(BaseModel):
+    id: int
+    trial: TrialResponse
+    saved_at: datetime
+    notes: Optional[str]
+    
+    class Config:
+        from_attributes = True
+
+# Filter schemas
+class TrialFilters(BaseModel):
+    condition: Optional[str] = None
+    phase: Optional[str] = None
+    max_distance: Optional[int] = None
+    is_remote: Optional[bool] = None
+    gender: Optional[str] = None
+
+# Analytics schemas
+class AnalyticsOverview(BaseModel):
+    total_users: int
+    total_trials: int
     total_saves: int
     total_passes: int
-    save_rate: float                        # saves / views * 100
-    category_breakdown: Dict[str, int]     # { "Oncology": 12, "Cardiology": 8, ... }
+    avg_swipes_per_user: float
+    top_conditions: List[dict]
+    recent_activity: List[dict]
+
+# Auth response
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserResponse

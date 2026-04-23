@@ -1,12 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "ES2022",
-    "lib": ["ES2022", "WebWorker"],
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "allowSyntheticDefaultImports": true,
-    "types": ["node"]
+    "moduleResolution": "Node"
   },
   "include": ["vite.config.ts"]
 }

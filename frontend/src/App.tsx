@@ -1,114 +1,101 @@
-import { FormEvent, useEffect, useState } from "react";
-import { createItem, deleteItem, listItems, TodoItem, updateItem } from "./api";
+import { useState, useEffect } from 'react';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import ProfilePage from './pages/ProfilePage';
+import SwipePage from './pages/SwipePage';
+import SavedPage from './pages/SavedPage';
+import SettingsPage from './pages/SettingsPage';
+import AdminPage from './pages/AdminPage';
+import { api } from './api';
 
-export default function App() {
-  const [items, setItems] = useState<TodoItem[]>([]);
-  const [title, setTitle] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+type Page = 'login' | 'signup' | 'profile' | 'swipe' | 'saved' | 'settings' | 'admin';
+
+function App() {
+  const [currentPage, setCurrentPage] = useState<Page>('login');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false);
 
   useEffect(() => {
-    void loadItems();
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+      checkProfile();
+    }
   }, []);
 
-  async function loadItems() {
+  const checkProfile = async () => {
     try {
-      setError(null);
-      setLoading(true);
-      setItems(await listItems());
+      await api.getProfile();
+      setHasProfile(true);
+      setCurrentPage('swipe');
     } catch {
-      setError("Unable to load items from the backend.");
-    } finally {
-      setLoading(false);
+      setHasProfile(false);
+      setCurrentPage('profile');
     }
-  }
+  };
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!title.trim()) return;
+  const handleLogin = (token: string) => {
+    localStorage.setItem('token', token);
+    setIsAuthenticated(true);
+    checkProfile();
+  };
 
-    try {
-      const created = await createItem(title.trim());
-      setItems((current) => [created, ...current]);
-      setTitle("");
-    } catch {
-      setError("Unable to create item.");
-    }
-  }
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+    setHasProfile(false);
+    setCurrentPage('login');
+  };
 
-  async function toggleItem(item: TodoItem) {
-    try {
-      const updated = await updateItem(item.id, !item.completed);
-      setItems((current) =>
-        current.map((currentItem) =>
-          currentItem.id === updated.id ? updated : currentItem,
-        ),
-      );
-    } catch {
-      setError("Unable to update item.");
-    }
-  }
+  const handleProfileCreated = () => {
+    setHasProfile(true);
+    setCurrentPage('swipe');
+  };
 
-  async function removeItem(id: number) {
-    try {
-      await deleteItem(id);
-      setItems((current) => current.filter((item) => item.id !== id));
-    } catch {
-      setError("Unable to delete item.");
-    }
+  if (!isAuthenticated) {
+    return currentPage === 'signup' ? (
+      <SignupPage onSignup={handleLogin} onSwitchToLogin={() => setCurrentPage('login')} />
+    ) : (
+      <LoginPage onLogin={handleLogin} onSwitchToSignup={() => setCurrentPage('signup')} />
+    );
   }
 
   return (
-    <main className="app-shell">
-      <section className="card">
-        <p className="eyebrow">Class project starter</p>
-        <h1>React + FastAPI + SQLite</h1>
-        <p className="description">
-          Add items below to confirm the frontend is talking to the backend.
-        </p>
-
-        <form className="form" onSubmit={handleSubmit}>
-          <input
-            aria-label="New item title"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Add a new task"
-          />
-          <button type="submit">Add</button>
-        </form>
-
-        {error ? <p className="error">{error}</p> : null}
-
-        <div className="list-wrap">
-          {loading ? (
-            <p>Loading…</p>
-          ) : items.length === 0 ? (
-            <p>No items yet.</p>
-          ) : (
-            <ul className="list">
-              {items.map((item) => (
-                <li key={item.id} className={item.completed ? "done" : ""}>
-                  <button
-                    type="button"
-                    className="toggle"
-                    onClick={() => void toggleItem(item)}
-                  >
-                    {item.completed ? "✓" : "○"}
-                  </button>
-                  <span>{item.title}</span>
-                  <button
-                    type="button"
-                    className="delete"
-                    onClick={() => void removeItem(item.id)}
-                  >
-                    Delete
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+    <div className="app">
+      <nav className="navbar">
+        <div className="nav-brand">💊 Trial Matcher</div>
+        <div className="nav-links">
+          <button onClick={() => setCurrentPage('swipe')} className={currentPage === 'swipe' ? 'active' : ''}>
+            Discover
+          </button>
+          <button onClick={() => setCurrentPage('saved')} className={currentPage === 'saved' ? 'active' : ''}>
+            Saved
+          </button>
+          <button onClick={() => setCurrentPage('settings')} className={currentPage === 'settings' ? 'active' : ''}>
+            Settings
+          </button>
+          <button onClick={() => setCurrentPage('admin')} className={currentPage === 'admin' ? 'active' : ''}>
+            Analytics
+          </button>
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
-      </section>
-    </main>
+      </nav>
+
+      <main className="main-content">
+        {!hasProfile && currentPage !== 'profile' ? (
+          <ProfilePage onProfileCreated={handleProfileCreated} />
+        ) : (
+          <>
+            {currentPage === 'profile' && <ProfilePage onProfileCreated={handleProfileCreated} />}
+            {currentPage === 'swipe' && <SwipePage />}
+            {currentPage === 'saved' && <SavedPage />}
+            {currentPage === 'settings' && <SettingsPage />}
+            {currentPage === 'admin' && <AdminPage />}
+          </>
+        )}
+      </main>
+    </div>
   );
 }
+
+export default App;
