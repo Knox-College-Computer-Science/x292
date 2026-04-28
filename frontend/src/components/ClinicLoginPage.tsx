@@ -1,30 +1,30 @@
-import HomeCtaSection from "./HomeCtaSection";
-import HomeHero from "./HomeHero";
 import HomeNavBar from "./HomeNavBar";
-import "./HomeButtons.css";
-import "./HomePage.css";
+import ClinicLoginComponent from "./ClinicLoginComponent";
+import "./LoginPage.css";
 
-type HomePageProps = {
+type ClinicLoginPageProps = {
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
-  onNavigateLogin: () => void;
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
+  onCreateAccount: () => void;
+  onNext: () => void;
 };
 
-export default function HomePage({
+export default function ClinicLoginPage({
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
-  onNavigateLogin,
   onNavigateAnalytics,
   onNavigateAllTrials,
   onSelectExperience,
-}: HomePageProps) {
+  onCreateAccount,
+  onNext,
+}: ClinicLoginPageProps) {
   return (
-    <main id="home" className="home-page">
+    <main className="login-page">
       <HomeNavBar
         selectedExperience={selectedExperience}
         onNavigateHome={onNavigateHome}
@@ -33,8 +33,13 @@ export default function HomePage({
         onNavigateAllTrials={onNavigateAllTrials}
         onSelectExperience={onSelectExperience}
       />
-      <HomeHero />
-      <HomeCtaSection onNavigateLogin={onNavigateLogin} />
+
+      <section className="login-page-content" aria-label="Clinic log in page">
+        <ClinicLoginComponent
+          onCreateAccount={onCreateAccount}
+          onNext={onNext}
+        />
+      </section>
     </main>
   );
 }
