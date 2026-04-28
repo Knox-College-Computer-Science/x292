@@ -1,30 +1,34 @@
-import HomeCtaSection from "./HomeCtaSection";
-import HomeHero from "./HomeHero";
 import HomeNavBar from "./HomeNavBar";
-import "./HomeButtons.css";
-import "./HomePage.css";
+import LoginComponent from "./LoginComponent";
+import "./LoginPage.css";
 
-type HomePageProps = {
+type LoginPageProps = {
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
-  onNavigateLogin: () => void;
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
+  labelText: string;
+  secondaryLabelText?: string;
+  onCreateAccount: () => void;
+  onNext: () => void;
 };
 
-export default function HomePage({
+export default function LoginPage({
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
-  onNavigateLogin,
   onNavigateAnalytics,
   onNavigateAllTrials,
   onSelectExperience,
-}: HomePageProps) {
+  labelText,
+  secondaryLabelText,
+  onCreateAccount,
+  onNext,
+}: LoginPageProps) {
   return (
-    <main id="home" className="home-page">
+    <main className="login-page">
       <HomeNavBar
         selectedExperience={selectedExperience}
         onNavigateHome={onNavigateHome}
@@ -33,8 +37,15 @@ export default function HomePage({
         onNavigateAllTrials={onNavigateAllTrials}
         onSelectExperience={onSelectExperience}
       />
-      <HomeHero />
-      <HomeCtaSection onNavigateLogin={onNavigateLogin} />
+
+      <section className="login-page-content" aria-label="Log in page">
+        <LoginComponent
+          labelText={labelText}
+          secondaryLabelText={secondaryLabelText}
+          onCreateAccount={onCreateAccount}
+          onNext={onNext}
+        />
+      </section>
     </main>
   );
 }

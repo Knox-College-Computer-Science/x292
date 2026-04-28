@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import HomePage from "./components/HomePage";
+import LoginPage from "./components/LoginPage";
+import ClinicLoginPage from "./components/ClinicLoginPage";
 import ProfileSetupPage from "./components/ProfileSetupPage";
 import ClinicProfileSetupPage from "./components/ClinicProfileSetupPage";
 import ClinicAllTrialsPage from "./components/ClinicAllTrialsPage";
@@ -15,6 +17,7 @@ import "./components/HomeButtons.css";
 
 type AppView =
   | "home"
+  | "login"
   | "analytics"
   | "analytics-result-uses"
   | "clinic-analytics-more"
@@ -43,10 +46,42 @@ export default function App() {
       <HomePage
         selectedExperience={experience}
         onNavigateProfile={() => setView("profile")}
+        onNavigateLogin={() => setView("login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateHome={() => setView("home")}
         onSelectExperience={setExperience}
+      />
+    );
+  }
+
+  if (view === "login" && experience === "participants") {
+    return (
+      <LoginPage
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
+        onSelectExperience={setExperience}
+        labelText="Sign in"
+        onCreateAccount={() => setView("profile")}
+        onNext={() => setView("profile")}
+      />
+    );
+  }
+
+  if (view === "login" && experience === "clinics") {
+    return (
+      <ClinicLoginPage
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
+        onSelectExperience={setExperience}
+        onCreateAccount={() => setView("profile")}
+        onNext={() => setView("profile")}
       />
     );
   }
