@@ -1,0 +1,46 @@
+.clinic-trial-card {
+  width: 1111px;
+  min-height: 540px;
+  border-radius: 30px;
+  padding: 42px 64px 56px;
+  background:
+    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    var(--accent-color);
+}
+
+.clinic-trial-card-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.clinic-trial-card-row {
+  min-height: 63px;
+  display: grid;
+  grid-template-columns: 1fr 494px;
+  align-items: center;
+  gap: 24px;
+}
+
+.clinic-trial-card-label {
+  color: #ffffff;
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.clinic-trial-card-row input {
+  width: 100%;
+  height: 63px;
+  border: 4px solid rgba(248, 221, 164, 0.92);
+  border-top-width: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #ffffff;
+  padding: 0 14px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.clinic-trial-card-row:first-child input {
+  border-top-width: 4px;
+}

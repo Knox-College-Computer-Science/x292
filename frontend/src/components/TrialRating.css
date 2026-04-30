@@ -1,0 +1,14 @@
+.trial-rating {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-color);
+  color: var(--main-color);
+  border-radius: 2px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}

@@ -1,150 +1,166 @@
-from typing import List, Dict
+""" 
+
+Pareto Front logic
+
+A trial should stay on the Pareto front if no other trial beats it in all these areas:
+
+condition relevance
+location closeness
+recruiting state
+remote convenience
+"""
+
+
 from sqlalchemy.orm import Session
-from math import radians, cos, sin, asin, sqrt
-from ..models import Trial, Profile, User, SwipeHistory, SavedTrial, PassedTrial
+from .. import models, crud
+from typing import List, Tuple, Dict
 
-class MatchingEngine:
-    
-    @staticmethod
-    def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-        """Calculate distance between two coordinates in miles using Haversine formula"""
-        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-        dlat = lat2 - lat1
-        dlon = lon2 - lon1
-        a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-        c = 2 * asin(sqrt(a))
-        miles = 3959 * c  # Earth radius in miles
-        return miles
-    
-    @staticmethod
-    def get_recommendations(
-        db: Session,
-        user: User,
-        limit: int = 20,
-        filters: Dict = None
-    ) -> List[Dict]:
-        """Get recommended trials for a user with match scoring"""
-        
-        profile = db.query(Profile).filter(Profile.user_id == user.id).first()
-        if not profile:
-            return []
-        
-        # Get trials user hasn't interacted with
-        interacted_trial_ids = (
-            db.query(SwipeHistory.trial_id)
-            .filter(SwipeHistory.user_id == user.id)
-            .distinct()
-            .subquery()
-        )
-        
-        query = db.query(Trial).filter(
-            Trial.status == "RECRUITING",
-            ~Trial.id.in_(interacted_trial_ids)
-        )
-        
-        # Apply filters
-        if filters:
-            if filters.get("condition"):
-                query = query.filter(Trial.condition.ilike(f"%{filters['condition']}%"))
-            if filters.get("phase"):
-                query = query.filter(Trial.phase == filters["phase"])
-            if filters.get("is_remote") is not None:
-                query = query.filter(Trial.is_remote == filters["is_remote"])
-            if filters.get("gender"):
-                query = query.filter(
-                    (Trial.gender == filters["gender"]) | (Trial.gender == "ALL")
-                )
-        
-        trials = query.limit(200).all()  # Get more for scoring
-        
-        # Score and rank trials
-        scored_trials = []
-        for trial in trials:
-            score, reasons = MatchingEngine._score_trial(trial, profile)
-            distance = None
-            
-            # Calculate distance if both have coordinates
-            if trial.latitude and trial.longitude:
-                # Note: We'd need geocoding for user location in production
-                # For now, using state matching as proxy
-                distance = 0 if trial.location_state == profile.location_state else 100
-            
-            scored_trials.append({
-                "trial": trial,
-                "score": score,
-                "match_reasons": reasons,
-                "distance_miles": distance
-            })
-        
-        # Sort by score (highest first) and return top matches
-        scored_trials.sort(key=lambda x: x["score"], reverse=True)
-        return scored_trials[:limit]
-    
-    @staticmethod
-    def _score_trial(trial: Trial, profile: Profile) -> tuple:
-        """Score a trial based on how well it matches the user profile"""
-        score = 0
-        reasons = []
-        
-        # Condition match (highest priority)
-        if profile.condition.lower() in trial.condition.lower():
-            score += 100
-            reasons.append(f"Matches your condition: {profile.condition}")
-        
-        # Age eligibility
-        if trial.min_age and trial.max_age:
-            if trial.min_age <= profile.age <= trial.max_age:
-                score += 50
-                reasons.append("You meet the age requirements")
-        elif not trial.min_age and not trial.max_age:
-            score += 25  # No age restriction
-        
-        # Location match
-        if trial.location_state == profile.location_state:
-            score += 40
-            reasons.append(f"Located in {profile.location_state}")
-        
-        # Remote eligibility
-        if trial.is_remote:
-            score += 30
-            reasons.append("Available remotely")
-        
-        # Phase preference
-        if profile.preferred_phase and trial.phase == profile.preferred_phase:
-            score += 20
-            reasons.append(f"Matches your preferred phase: {trial.phase}")
-        
-        # Compensation
-        if trial.compensation:
-            score += 15
-            reasons.append("Offers compensation")
-        
-        # Recently started (more likely to be actively recruiting)
-        if trial.start_date:
-            score += 10
-        
-        return score, reasons
-    
-    @staticmethod
-    def adapt_recommendations(db: Session, user: User) -> Dict:
-        """Analyze user behavior to improve future recommendations"""
-        
-        # Get user's swipe history
-        saves = db.query(SavedTrial).filter(SavedTrial.user_id == user.id).all()
-        passes = db.query(PassedTrial).filter(PassedTrial.user_id == user.id).all()
-        
-        # Analyze patterns
-        saved_phases = [s.trial.phase for s in saves if s.trial.phase]
-        saved_locations = [s.trial.location_state for s in saves if s.trial.location_state]
-        
-        insights = {
-            "total_saves": len(saves),
-            "total_passes": len(passes),
-            "preferred_phases": list(set(saved_phases)),
-            "preferred_states": list(set(saved_locations)),
-            "engagement_rate": len(saves) / (len(saves) + len(passes)) if (len(saves) + len(passes)) > 0 else 0
-        }
-        
-        return insights
 
-matching_engine = MatchingEngine()
+def _condition_match(profile_condition: str, trial_condition: str) -> int:
+    if not profile_condition or not trial_condition:
+        return 0
+
+    return 1 if any(
+        cond.strip().lower() in trial_condition.lower()
+        for cond in profile_condition.split(",")
+        if cond.strip()
+    ) else 0
+
+
+def _location_match(profile_location: str, trial_location: str) -> int:
+    if not profile_location or not trial_location:
+        return 0
+
+    return 1 if profile_location.lower() in trial_location.lower() else 0
+
+
+def _recruiting_match(recruitment_status: str) -> int:
+    if not recruitment_status:
+        return 0
+
+    return 1 if recruitment_status.upper() == "RECRUITING" else 0
+
+
+def _remote_match(participation_preference: str, remote_eligible: bool) -> int:
+    if not remote_eligible:
+        return 0
+
+    if participation_preference in [None, "", "Either", "Remote"]:
+        return 1
+
+    return 0
+
+
+def _build_metrics(profile: models.UserProfile, trial: models.Trial) -> Dict[str, int]:
+    return {
+        "condition": _condition_match(profile.health_conditions, trial.condition),
+        "location": _location_match(profile.location, trial.location),
+        "recruiting": _recruiting_match(trial.recruitment_status),
+        "remote": _remote_match(profile.participation_preference, trial.remote_eligible),
+    }
+
+
+def _dominates(a: Dict[str, int], b: Dict[str, int]) -> bool:
+    """
+    Trial A dominates trial B if:
+    - A is at least as good as B in every criterion
+    - A is strictly better than B in at least one criterion
+    """
+    return all(a[key] >= b[key] for key in a) and any(a[key] > b[key] for key in a)
+
+
+def _pareto_front(
+    trial_metrics: List[Tuple[models.Trial, Dict[str, int]]]
+) -> List[Tuple[models.Trial, Dict[str, int]]]:
+    front = []
+
+    for i, (trial_a, metrics_a) in enumerate(trial_metrics):
+        dominated = False
+
+        for j, (trial_b, metrics_b) in enumerate(trial_metrics):
+            if i == j:
+                continue
+
+            if _dominates(metrics_b, metrics_a):
+                dominated = True
+                break
+
+        if not dominated:
+            front.append((trial_a, metrics_a))
+
+    return front
+
+
+def _score_from_metrics(metrics: Dict[str, int]) -> Tuple[float, List[str]]:
+    score = 0.0
+    reasons = []
+
+    if metrics["condition"]:
+        score += 40
+        reasons.append("condition match")
+
+    if metrics["location"]:
+        score += 30
+        reasons.append("location match")
+
+    if metrics["recruiting"]:
+        score += 20
+        reasons.append("actively recruiting")
+
+    if metrics["remote"]:
+        score += 10
+        reasons.append("remote eligible")
+
+    return score, reasons
+
+
+def match_trials(
+    db: Session,
+    user_id: str,
+    trials: List[models.Trial]
+) -> List[Tuple[models.Trial, float, List[str]]]:
+    """
+    Match trials using a Pareto-front filter first, then weighted scoring.
+    Returns list of (trial, score, match_reasons)
+    """
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user or not user.profile:
+        raise Exception("User profile not found")
+
+    profile = user.profile
+    candidate_trials = []
+
+    for trial in trials:
+        interaction = crud.get_user_interaction(db, user_id, trial.id)
+        if interaction and interaction.action in ["save", "pass"]:
+            continue
+
+        metrics = _build_metrics(profile, trial)
+
+        # Only keep trials that match at least one useful criterion
+        if sum(metrics.values()) > 0:
+            candidate_trials.append((trial, metrics))
+
+    pareto_trials = _pareto_front(candidate_trials)
+
+    matched_trials = []
+    for trial, metrics in pareto_trials:
+        score, reasons = _score_from_metrics(metrics)
+        matched_trials.append((trial, score, reasons))
+
+    matched_trials.sort(key=lambda x: x[1], reverse=True)
+    return matched_trials
+
+
+def get_matched_trials(
+    db: Session,
+    user_id: str,
+    condition: str
+) -> List[models.Trial]:
+    """
+    Get matched trials for a user.
+    Convenience function that combines search + matching.
+    """
+    trials = crud.search_trials(db, condition=condition, limit=100)
+    scored = match_trials(db, user_id, trials)
+    return [trial for trial, score, reasons in scored]

@@ -1,116 +1,209 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, ForeignKey, Text, JSON
+"""
+models.py
+---------
+SQLAlchemy ORM models.
+Each class maps to a database table.
+
+Run migrations after changes:
+    alembic revision --autogenerate -m "description"
+    alembic upgrade head
+"""
+
+from sqlalchemy import Column, String, Integer, Boolean, Float, Text, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from sqlalchemy.sql import func
 from .database import Base
+import uuid
+
+
+def gen_uuid():
+    return str(uuid.uuid4())
+
+
+# ---------------------------------------------------------------------------
+# User & Profile
+# ---------------------------------------------------------------------------
 
 class User(Base):
+    """
+    Core authentication table.
+    Stores login credentials only — profile data lives in UserProfile.
+    """
     __tablename__ = "users"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    
-    profile = relationship("Profile", back_populates="user", uselist=False)
-    saved_trials = relationship("SavedTrial", back_populates="user")
-    passed_trials = relationship("PassedTrial", back_populates="user")
-    swipe_history = relationship("SwipeHistory", back_populates="user")
 
-class Profile(Base):
-    __tablename__ = "profiles"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
-    age = Column(Integer)
-    location_city = Column(String)
-    location_state = Column(String)
-    location_country = Column(String, default="United States")
-    condition = Column(String)
-    max_distance_miles = Column(Integer, default=50)
-    willing_to_travel = Column(Boolean, default=False)
-    preferred_phase = Column(String, nullable=True)
-    preferred_type = Column(String, nullable=True)
-    privacy_show_age = Column(Boolean, default=True)
-    privacy_show_location = Column(Boolean, default=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    id          = Column(String, primary_key=True, default=gen_uuid)
+    email       = Column(String, unique=True, nullable=False, index=True)
+    hashed_password = Column(String, nullable=False)
+    role        = Column(String, default="user")   # "user" | "admin" | "clinic"
+    created_at  = Column(DateTime(timezone=True), server_default=func.now())
+
+    profile     = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete")
+    interactions = relationship("TrialInteraction", back_populates="user", cascade="all, delete")
+
+
+class UserProfile(Base):
+    """
+    Extended participant profile.
+    Collected across 3 registration steps:
+      Step 1 — Basic Info
+      Step 2 — Health Info
+      Step 3 — Preferences
+    """
+    __tablename__ = "user_profiles"
+
+    id              = Column(String, primary_key=True, default=gen_uuid)
+    user_id         = Column(String, ForeignKey("users.id"), unique=True, nullable=False)
+    created_at      = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at      = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # ── Step 1: Basic Info ──────────────────────────────────────────────────
+    full_name           = Column(String, nullable=False)
+    phone               = Column(String, nullable=True)
+    location            = Column(String, nullable=True)
+    preferred_language  = Column(String, default="English")
+
+    # ── Step 2: Health Info ─────────────────────────────────────────────────
+    age                 = Column(Integer, nullable=True)
+    gender              = Column(String, nullable=True)          # Male | Female | Non-binary | Prefer not to say
+    ethnicity           = Column(String, nullable=True)
+    health_conditions   = Column(Text, nullable=True)            # Free text
+    insurance_status    = Column(String, nullable=True)          # Insured | Uninsured | Student | Other
+    consent_given       = Column(Boolean, default=False)
+
+    # ── Step 3: Preferences ─────────────────────────────────────────────────
+    trial_interests         = Column(Text, nullable=True)        # Free text
+    time_commitment         = Column(String, nullable=True)
+    notification_preferences = Column(String, default="Email")  # Email | SMS | Both | None
+    travel_willingness      = Column(String, nullable=True)
+    participation_preference = Column(String, nullable=True)     # In-person | Remote | Either
+
+    # ── Privacy Controls ────────────────────────────────────────────────────
+    # JSON dict: { "location": true, "health_conditions": true, ... }
+    # When a field is false, it is EXCLUDED from trial matching algorithm.
+    matching_fields_enabled = Column(JSON, default={
+        "location": True,
+        "health_conditions": True,
+        "age": True,
+        "gender": True,
+        "participation_preference": True,
+    })
+
+    profile_completed   = Column(Boolean, default=False)
+
     user = relationship("User", back_populates="profile")
 
+
+# ---------------------------------------------------------------------------
+# Clinic
+# ---------------------------------------------------------------------------
+
+class ClinicProfile(Base):
+    """
+    Clinic/Researcher registration.
+    A clinic can post multiple trials.
+    """
+    __tablename__ = "clinic_profiles"
+
+    id                  = Column(String, primary_key=True, default=gen_uuid)
+    clinic_name         = Column(String, nullable=False)
+    logo_url            = Column(String, nullable=True)
+    contact_person      = Column(String, nullable=True)
+    contact_email       = Column(String, nullable=False)
+    contact_phone       = Column(String, nullable=True)
+    location            = Column(String, nullable=False)
+    sponsor_institution = Column(String, nullable=True)
+    created_at          = Column(DateTime(timezone=True), server_default=func.now())
+
+    trials = relationship("Trial", back_populates="clinic", cascade="all, delete")
+
+
+# ---------------------------------------------------------------------------
+# Trial
+# ---------------------------------------------------------------------------
+
 class Trial(Base):
+    """
+    Clinical trial record.
+    Can be created by a clinic OR fetched live from ClinicalTrials.gov.
+    """
     __tablename__ = "trials"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    nct_id = Column(String, unique=True, index=True, nullable=False)
-    title = Column(String, nullable=False)
-    brief_summary = Column(Text)
-    detailed_description = Column(Text, nullable=True)
-    condition = Column(String)
-    phase = Column(String, nullable=True)
-    status = Column(String)
-    sponsor = Column(String, nullable=True)
-    location_city = Column(String, nullable=True)
-    location_state = Column(String, nullable=True)
-    location_country = Column(String, nullable=True)
-    location_facility = Column(String, nullable=True)
-    latitude = Column(Float, nullable=True)
-    longitude = Column(Float, nullable=True)
-    min_age = Column(Integer, nullable=True)
-    max_age = Column(Integer, nullable=True)
-    gender = Column(String, nullable=True)
-    compensation = Column(String, nullable=True)
-    is_remote = Column(Boolean, default=False)
-    start_date = Column(DateTime, nullable=True)
-    completion_date = Column(DateTime, nullable=True)
-    eligibility_criteria = Column(Text, nullable=True)
-    contact_email = Column(String, nullable=True)
-    contact_phone = Column(String, nullable=True)
-    cached_at = Column(DateTime, default=datetime.utcnow)
-    
-    saved_by = relationship("SavedTrial", back_populates="trial")
-    passed_by = relationship("PassedTrial", back_populates="trial")
-    swipe_history = relationship("SwipeHistory", back_populates="trial")
 
-class SavedTrial(Base):
-    __tablename__ = "saved_trials"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    trial_id = Column(Integer, ForeignKey("trials.id"), nullable=False)
-    saved_at = Column(DateTime, default=datetime.utcnow)
-    notes = Column(Text, nullable=True)
-    
-    user = relationship("User", back_populates="saved_trials")
-    trial = relationship("Trial", back_populates="saved_by")
+    id                      = Column(String, primary_key=True, default=gen_uuid)
+    nct_id = Column(String, unique=True, nullable=True, index=True)  # ClinicalTrials.gov ID
+    clinic_id               = Column(String, ForeignKey("clinic_profiles.id"), nullable=True)
+    created_at              = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at              = Column(DateTime(timezone=True), onupdate=func.now())
 
-class PassedTrial(Base):
-    __tablename__ = "passed_trials"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    trial_id = Column(Integer, ForeignKey("trials.id"), nullable=False)
-    passed_at = Column(DateTime, default=datetime.utcnow)
-    
-    user = relationship("User", back_populates="passed_trials")
-    trial = relationship("Trial", back_populates="passed_by")
+    # ── Core Info ────────────────────────────────────────────────────────────
+    title                   = Column(String, nullable=False)
+    condition               = Column(String, nullable=False)
+    category                = Column(String, nullable=True)
+    location                = Column(String, nullable=False)
+    study_type              = Column(String, nullable=True)      # Interventional | Observational | etc.
+    study_description       = Column(Text, nullable=True)
+    study_phase             = Column(String, nullable=True)      # Phase 1-4 | N/A
+    recruitment_status      = Column(String, default="Recruiting")
 
-class SwipeHistory(Base):
-    __tablename__ = "swipe_history"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    trial_id = Column(Integer, ForeignKey("trials.id"), nullable=False)
-    action = Column(String, nullable=False)  # 'save', 'pass', 'view'
-    timestamp = Column(DateTime, default=datetime.utcnow)
-    
-    user = relationship("User", back_populates="swipe_history")
-    trial = relationship("Trial", back_populates="swipe_history")
+    # ── Compensation ─────────────────────────────────────────────────────────
+    # NOTE: compensation may be NULL — frontend shows "not available" when null
+    compensation            = Column(String, nullable=True)
 
-class AnalyticsEvent(Base):
-    __tablename__ = "analytics_events"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    event_type = Column(String, nullable=False, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    trial_id = Column(Integer, ForeignKey("trials.id"), nullable=True)
-    event_metadata = Column(JSON, nullable=True)
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    # ── Schedule ─────────────────────────────────────────────────────────────
+    duration                = Column(String, nullable=True)
+    visit_frequency         = Column(String, nullable=True)
+    time_commitment         = Column(String, nullable=True)
+    start_date              = Column(String, nullable=True)
+    end_date                = Column(String, nullable=True)
+
+    # ── Eligibility ──────────────────────────────────────────────────────────
+    eligibility_age_min     = Column(Integer, nullable=True)
+    eligibility_age_max     = Column(Integer, nullable=True)
+    eligibility_gender      = Column(String, default="All")      # All | Male | Female
+    eligibility_conditions  = Column(Text, nullable=True)
+    eligibility_summary     = Column(Text, nullable=True)
+
+    # ── Participation ────────────────────────────────────────────────────────
+    remote_eligible         = Column(Boolean, default=False)
+
+    # ── Contact ──────────────────────────────────────────────────────────────
+    sponsor                 = Column(String, nullable=True)
+    contact_link            = Column(String, nullable=True)
+
+    # ── Analytics counters (updated on each interaction) ────────────────────
+    views_count             = Column(Integer, default=0)
+    saves_count             = Column(Integer, default=0)
+    passes_count            = Column(Integer, default=0)
+
+    clinic        = relationship("ClinicProfile", back_populates="trials")
+    interactions  = relationship("TrialInteraction", back_populates="trial", cascade="all, delete")
+
+
+# ---------------------------------------------------------------------------
+# Trial Interaction
+# ---------------------------------------------------------------------------
+
+class TrialInteraction(Base):
+    """
+    Records every user action on a trial card:
+      - view  → user opened trial details
+      - save  → user swiped right / clicked save
+      - pass  → user swiped left / clicked not interested
+
+    Used for:
+      1. Building the user's saved-trials list (filter action="save")
+      2. Excluding already-seen trials from the browse feed
+      3. Powering the analytics dashboard
+      4. Adjusting future recommendations (save/pass history)
+    """
+    __tablename__ = "trial_interactions"
+
+    id              = Column(String, primary_key=True, default=gen_uuid)
+    user_id         = Column(String, ForeignKey("users.id"), nullable=False)
+    trial_id        = Column(String, ForeignKey("trials.id"), nullable=False)
+    action          = Column(String, nullable=False)             # view | save | pass
+    trial_category  = Column(String, nullable=True)             # denormalized for fast analytics
+    trial_title     = Column(String, nullable=True)             # denormalized for fast analytics
+    created_at      = Column(DateTime(timezone=True), server_default=func.now())
+
+    user  = relationship("User", back_populates="interactions")
+    trial = relationship("Trial", back_populates="interactions")

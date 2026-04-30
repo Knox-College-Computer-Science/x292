@@ -1,0 +1,8 @@
+.home-page {
+  position: relative;
+  width: 1440px;
+  min-height: 2334px;
+  margin: 0 auto;
+  background: var(--main-color);
+  overflow: hidden;
+}

@@ -1,0 +1,100 @@
+.profile-card {
+  width: 1111px;
+  min-height: 710px;
+  padding: 48px;
+  border-radius: 12px;
+  background:
+    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    var(--accent-color);
+  color: #ffffff;
+}
+
+.profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 32px;
+}
+
+.profile-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.profile-form input,
+.profile-form select,
+.profile-form textarea {
+  width: 100%;
+  border: 1px solid var(--accent-color);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  padding: 12px 14px;
+  font: inherit;
+}
+
+.profile-form select {
+  height: 50px;
+}
+
+.profile-form textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.profile-form-wide {
+  grid-column: 1 / -1;
+}
+
+.profile-consent-row {
+  flex-direction: row;
+  align-items: center;
+}
+
+.profile-consent-row input {
+  width: 24px;
+  height: 24px;
+}
+
+.profile-form-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 16px;
+  color: #ffe6bf;
+}
+
+.profile-form-submit {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: 280px;
+}
+
+.matching-fields-panel {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(248, 221, 164, 0.8);
+  border-radius: 10px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.matching-fields-panel legend {
+  padding: 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.matching-field-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.matching-field-item input {
+  width: 20px;
+  height: 20px;
+}

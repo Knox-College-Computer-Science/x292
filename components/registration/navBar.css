@@ -1,0 +1,39 @@
+.registration-nav-bar {
+  --button-main: #813405;
+  --button-accent: #f8dda4;
+
+  position: relative;
+  width: 1440px;
+  height: 88px;
+  background-color: var(--button-main);
+}
+
+.registration-nav-home {
+  position: absolute;
+  left: 42px;
+  top: 19px;
+}
+
+.registration-nav-experience {
+  position: absolute;
+  left: 224px;
+  top: 22px;
+}
+
+.registration-nav-analytics {
+  position: absolute;
+  left: 861px;
+  top: 19px;
+}
+
+.registration-nav-trials {
+  position: absolute;
+  left: 1047px;
+  top: 19px;
+}
+
+.registration-nav-profile {
+  position: absolute;
+  left: 1233px;
+  top: 19px;
+}

@@ -1,0 +1,26 @@
+.text-box {
+  width: 1193px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.text-box-heading {
+  margin: 0;
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--main-color);
+}
+
+.text-box-body {
+  width: 1193px;
+  height: 209px;
+  padding: 22px 26px;
+  border-radius: 12px;
+  background: rgba(129, 52, 5, 0.44);
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1.6;
+  overflow: hidden;
+}

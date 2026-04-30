@@ -1,0 +1,14 @@
+.blank-page {
+  width: 1440px;
+  min-height: 2334px;
+  margin: 0 auto;
+  background: var(--accent-color);
+}
+
+.blank-page-label {
+  padding-top: 120px;
+  text-align: center;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--main-color);
+}

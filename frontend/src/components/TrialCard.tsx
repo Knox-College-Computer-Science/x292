@@ -1,95 +1,109 @@
-import { Trial } from '../api';
+import TrialRating from "./TrialRating";
+import "./TrialCard.css";
+import { Trial } from "../api";
 
-interface Props {
-  trial: Trial;
+type TrialCardProps = {
+  trial: Trial | null;
+  isLoading: boolean;
+  onSave: () => void;
+  onPass: () => void;
+  onNavigateMoreDetails: () => void;
+};
+
+function formatRemoteLabel(trial: Trial): string {
+  return trial.remote_eligible ? "Remote eligible" : "In-person";
 }
 
-export default function TrialCard({ trial }: Props) {
+export default function TrialCard({
+  trial,
+  isLoading,
+  onSave,
+  onPass,
+  onNavigateMoreDetails,
+}: TrialCardProps) {
+  if (isLoading) {
+    return (
+      <section className="trial-card" aria-label="Trial details">
+        <h2 className="trial-card-title">Loading trial recommendations...</h2>
+      </section>
+    );
+  }
+
+  if (!trial) {
+    return (
+      <section className="trial-card" aria-label="Trial details">
+        <h2 className="trial-card-title">No trials found yet</h2>
+        <p className="trial-card-empty-copy">
+          Try broadening your condition or location preferences.
+        </p>
+      </section>
+    );
+  }
+
   return (
-    <div className="trial-card">
-      <div className="trial-card-header">
-        <h3>{trial.title}</h3>
-        {trial.sponsor && <p className="trial-sponsor">by {trial.sponsor}</p>}
-      </div>
+    <section className="trial-card" aria-label="Trial details">
+      <h2 className="trial-card-title">{trial.title}</h2>
 
-      <div className="trial-badges">
-        {trial.phase && <span className="badge badge-phase">{trial.phase}</span>}
-        {trial.is_remote && <span className="badge badge-remote">📍 Remote</span>}
-        {trial.compensation && <span className="badge badge-comp">💰 Compensated</span>}
-        <span className="badge badge-status">{trial.status}</span>
-      </div>
+      <div className="trial-card-grid">
+        <div className="trial-visual-box" />
 
-      {trial.match_reasons && trial.match_reasons.length > 0 && (
-        <div className="match-reasons">
-          <strong>Why this matches:</strong>
-          <ul>
-            {trial.match_reasons.map((reason, index) => (
-              <li key={index}>✓ {reason}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="trial-details">
-        <h4>Summary</h4>
-        <p>{trial.brief_summary}</p>
-
-        {trial.condition && (
-          <div className="detail-row">
-            <strong>Condition:</strong> {trial.condition}
+        <div className="trial-details-panel">
+          <div className="trial-detail-row">
+            <span className="trial-detail-label">
+              {trial.study_type || "Study type not specified"}
+            </span>
           </div>
-        )}
-
-        {trial.location_facility && (
-          <div className="detail-row">
-            <strong>Location:</strong> {trial.location_facility}
-            {trial.location_city && `, ${trial.location_city}`}
-            {trial.location_state && `, ${trial.location_state}`}
+          <div className="trial-detail-row">
+            <span className="trial-detail-date">
+              {trial.recruitment_status || "Recruitment status unavailable"}
+            </span>
           </div>
-        )}
-
-        {(trial.min_age || trial.max_age) && (
-          <div className="detail-row">
-            <strong>Age Range:</strong> {trial.min_age || '?'} - {trial.max_age || '?'} years
+          <div className="trial-detail-row trial-detail-row-split">
+            <span className="trial-detail-label">{trial.location}</span>
+            <span className="trial-detail-meta-right">{trial.study_phase || "Phase N/A"}</span>
           </div>
-        )}
-
-        {trial.gender && (
-          <div className="detail-row">
-            <strong>Gender:</strong> {trial.gender}
+          <div className="trial-detail-row">
+            <span className="trial-detail-label">
+              {trial.compensation || "Compensation not available"}
+            </span>
           </div>
-        )}
+          <div className="trial-detail-row">
+            <span className="trial-detail-label">
+              {trial.time_commitment || "Time commitment not listed"}
+            </span>
+          </div>
+          <div className="trial-detail-row">
+            <span className="trial-detail-label">{formatRemoteLabel(trial)}</span>
+          </div>
 
-        {trial.eligibility_criteria && (
-          <div className="detail-section">
-            <h4>Eligibility Criteria</h4>
-            <div className="eligibility-text">
-              {trial.eligibility_criteria.slice(0, 500)}
-              {trial.eligibility_criteria.length > 500 && '...'}
+          <div className="trial-actions-row">
+            <button
+              type="button"
+              className="atlas-button atlas-button-variant-1 trial-more-info-button"
+              onClick={onNavigateMoreDetails}
+            >
+              More Info
+            </button>
+            <div className="trial-actions-secondary">
+              <button
+                type="button"
+                className="atlas-button atlas-button-variant-back trial-pass-button"
+                onClick={onPass}
+              >
+                Pass
+              </button>
+              <button
+                type="button"
+                className="atlas-button atlas-button-variant-1 trial-save-button"
+                onClick={onSave}
+              >
+                Save
+              </button>
             </div>
+            <TrialRating value={String(Math.max(1, trial.saves_count))} />
           </div>
-        )}
-
-        {(trial.contact_email || trial.contact_phone) && (
-          <div className="detail-section">
-            <h4>Contact Information</h4>
-            {trial.contact_email && (
-              <div className="contact-info">
-                📧 <a href={`mailto:${trial.contact_email}`}>{trial.contact_email}</a>
-              </div>
-            )}
-            {trial.contact_phone && (
-              <div className="contact-info">
-                📞 {trial.contact_phone}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="trial-id">
-          <strong>Trial ID:</strong> {trial.nct_id}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
