@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine
-from .routes import trials as trials_router
+from .routes import trials, users, clinics
 
 Base.metadata.create_all(bind=engine)
 
@@ -22,5 +22,7 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-    
-app.include_router(trials_router.router)
+#THIS MAKES /auth/login,register,me,clinics actually available
+app.include_router(trials.router) 
+app.include_router(users.router) 
+app.include_router(clinics.router)

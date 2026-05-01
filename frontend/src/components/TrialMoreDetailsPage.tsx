@@ -3,6 +3,7 @@ import TextBox from "./TextBox";
 import "./TrialMoreDetailsPage.css";
 
 type TrialMoreDetailsPageProps = {
+  trialId: string | null;
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
@@ -12,6 +13,7 @@ type TrialMoreDetailsPageProps = {
 };
 
 export default function TrialMoreDetailsPage({
+  trialId,
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
