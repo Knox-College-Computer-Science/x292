@@ -1,27 +1,27 @@
-.trial-card {
+.clinic-analytics-card {
   position: relative;
   width: 1111px;
   height: 606px;
   padding: 0;
-  border-radius: 12px;
+  border-radius: 26px;
   background:
     linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
     var(--accent-color);
   color: #ffffff;
 }
 
-.trial-card-title {
+.clinic-analytics-card-title {
   position: absolute;
   top: 13px;
   left: 118px;
-  margin: 0 0 64px;
+  margin: 0;
   font-size: 48px;
   font-weight: 700;
   line-height: 1;
   color: #ffffff;
 }
 
-.trial-card-grid {
+.clinic-analytics-card-grid {
   position: absolute;
   top: 77px;
   left: 118px;
@@ -29,15 +29,15 @@
   gap: 48px;
 }
 
-.trial-visual-box {
+.clinic-analytics-visual-box {
   width: 520px;
   height: 475px;
   background: rgba(248, 221, 164, 0.4);
-  border-radius: 10px;
+  border-radius: 0;
   flex-shrink: 0;
 }
 
-.trial-details-panel {
+.clinic-analytics-details-panel {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -45,7 +45,7 @@
   width: 372px;
 }
 
-.trial-detail-row {
+.clinic-analytics-detail-row {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -57,33 +57,25 @@
   color: #ffffff;
 }
 
-.trial-detail-label {
+.clinic-analytics-detail-label {
   min-width: 0;
 }
 
-.trial-detail-date {
+.clinic-analytics-detail-date {
   font-size: 42px;
   font-weight: 700;
   line-height: 1;
   color: #ffffff;
 }
 
-.trial-detail-meta-right {
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1;
-  color: #ffffff;
-  text-align: right;
-}
-
-.trial-actions-row {
+.clinic-analytics-actions-row {
   margin-top: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.trial-more-info-button {
+.clinic-analytics-more-info-button {
   width: 165px;
   height: 50px;
 }

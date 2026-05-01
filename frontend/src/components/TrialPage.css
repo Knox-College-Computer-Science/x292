@@ -9,3 +9,33 @@
   width: 1111px;
   margin: 67px auto 0;
 }
+
+.trial-page-controls {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 350px auto 350px;
+  align-items: center;
+}
+
+.trial-page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+.trial-page-back,
+.trial-page-all-trials {
+  width: 165px;
+  height: 50px;
+}
+
+.trial-page-arrows {
+  display: flex;
+  justify-content: center;
+}
+
+.trial-page-controls-spacer {
+  width: 350px;
+  height: 1px;
+}

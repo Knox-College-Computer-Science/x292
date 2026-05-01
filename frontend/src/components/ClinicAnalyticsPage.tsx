@@ -1,9 +1,9 @@
 import HomeNavBar from "./HomeNavBar";
 import Arrows from "./Arrows";
-import UserAnalyticsCard from "./UserAnalyticsCard";
-import "./UserAnalyticsPage.css";
+import ClinicAnalyticsCard from "./ClinicAnalyticsCard";
+import "./ClinicAnalyticsPage.css";
 
-type UserAnalyticsPageProps = {
+type ClinicAnalyticsPageProps = {
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
@@ -13,7 +13,7 @@ type UserAnalyticsPageProps = {
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-export default function UserAnalyticsPage({
+export default function ClinicAnalyticsPage({
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
@@ -21,9 +21,9 @@ export default function UserAnalyticsPage({
   onNavigateAllTrials,
   onNavigateMoreDetails,
   onSelectExperience,
-}: UserAnalyticsPageProps) {
+}: ClinicAnalyticsPageProps) {
   return (
-    <main className="user-analytics-page">
+    <main className="clinic-analytics-page">
       <HomeNavBar
         selectedExperience={selectedExperience}
         onNavigateHome={onNavigateHome}
@@ -33,11 +33,11 @@ export default function UserAnalyticsPage({
         onSelectExperience={onSelectExperience}
       />
       <section
-        className="user-analytics-page-content"
-        aria-label="User analytics"
+        className="clinic-analytics-page-content"
+        aria-label="Clinic analytics"
       >
-        <UserAnalyticsCard onNavigateMoreDetails={onNavigateMoreDetails} />
-        <div className="user-analytics-page-arrows">
+        <ClinicAnalyticsCard onNavigateMoreDetails={onNavigateMoreDetails} />
+        <div className="clinic-analytics-page-arrows">
           <Arrows />
         </div>
       </section>
