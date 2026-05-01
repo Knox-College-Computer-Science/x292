@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine
 from .routes import trials as trials_router
+from .routes import users as users_router
+from .routes import clinics as clinics_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -24,3 +26,6 @@ def health() -> dict[str, str]:
 
     
 app.include_router(trials_router.router)
+app.include_router(users_router.router)
+app.include_router(clinics_router.router)
+

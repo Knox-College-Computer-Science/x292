@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from typing import Optional, List
 
-#CRUD IS create Read Update Delete
+#CRUD IS Create Read Update Delete
 
 #Adds a new Trial to the database
 def create_trial(db: Session, trial: schemas.TrialCreate) -> models.Trial:
