@@ -20,8 +20,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-
-
 export type Trial = {
   id: string;
   nct_id?: string | null;
@@ -54,6 +52,18 @@ export type Trial = {
   created_at: string;
 };
 
+export type TrialAnalyticsStats = {
+  total_views: number;
+  total_saves: number;
+  total_passes: number;
+  top_trials: {
+    id: string;
+    title: string;
+    saves: number;
+  }[];
+  category_popularity: Record<string, number>;
+};
+
 export function listTrials(condition: string, location?: string) {
   const params = new URLSearchParams({ condition });
 
@@ -84,4 +94,8 @@ export function passTrial(trialId: string, userId: string) {
     `/trials/${trialId}/pass?${params.toString()}`,
     { method: "POST" }
   );
+}
+
+export function getTrialAnalyticsStats() {
+  return request<TrialAnalyticsStats>("/trials/analytics/stats");
 }
