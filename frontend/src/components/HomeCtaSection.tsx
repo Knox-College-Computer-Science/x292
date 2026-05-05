@@ -2,11 +2,11 @@ import "./HomeCtaSection.css";
 import HomeInfoSection from "./HomeInfoSection";
 
 type HomeCtaSectionProps = {
-  onNavigateProfile: () => void;
+  onNavigateLogin: () => void;
 };
 
 export default function HomeCtaSection({
-  onNavigateProfile,
+  onNavigateLogin,
 }: HomeCtaSectionProps) {
   return (
     <section className="help-section" aria-label="Call to action">
@@ -14,7 +14,7 @@ export default function HomeCtaSection({
       <button
         type="button"
         className="atlas-button atlas-button-variant-1 join-button"
-        onClick={onNavigateProfile}
+        onClick={onNavigateLogin}
       >
         Join Now!
       </button>

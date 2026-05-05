@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional, Dict
 from datetime import datetime
 
@@ -86,6 +86,8 @@ class PrivacySettingsUpdate(BaseModel):
 
 
 class UserProfileResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     email: str
     full_name: str
@@ -107,9 +109,6 @@ class UserProfileResponse(BaseModel):
     profile_completed: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 # ---------------------------------------------------------------------------
 # Clinic Profile
@@ -127,11 +126,10 @@ class ClinicProfileCreate(BaseModel):
 
 
 class ClinicProfileResponse(ClinicProfileCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # ---------------------------------------------------------------------------
@@ -167,14 +165,13 @@ class TrialCreate(BaseModel):
 
 
 class TrialResponse(TrialCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     views_count: int
     saves_count: int
     passes_count: int
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class TrialFilterParams(BaseModel):
@@ -197,14 +194,13 @@ class InteractionCreate(BaseModel):
 
 
 class InteractionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     trial_id: str
     user_id: str
     action: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # ---------------------------------------------------------------------------
@@ -231,8 +227,7 @@ class TodoItemUpdate(TodoItemBase):
     completed: Optional[bool] = None
 
 class TodoItemRead(TodoItemBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     completed: bool
-
-    class Config:
-        from_attributes = True

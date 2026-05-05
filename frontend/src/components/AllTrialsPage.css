@@ -42,12 +42,13 @@
 
 .all-trials-up-next-entry {
   width: 100%;
-  height: 60px;
-  display: flex;
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
   align-items: center;
+  column-gap: 24px;
   box-sizing: border-box;
-  position: relative;
-  padding: 0;
+  padding: 12px 106px;
 }
 
 .all-trials-up-next-entry-accent-40 {
@@ -59,23 +60,20 @@
 }
 
 .all-trials-up-next-title {
-  position: absolute;
-  left: 106px;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 20px;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .all-trials-up-next-date {
-  position: absolute;
-  right: 106px;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 20px;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1.25;
+  text-align: right;
 }
 
 /* Status Box */
@@ -94,42 +92,38 @@
 .all-trials-status-header {
   width: 100%;
   height: 60px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr) 120px;
   align-items: center;
+  column-gap: 26px;
   box-sizing: border-box;
-  padding: 0;
-  position: relative;
+  padding: 0 40px 0 106px;
   background: var(--main-color);
 }
 
 .all-trials-status-trial-col {
-  position: absolute;
-  left: 106px;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 36px;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1;
 }
 
 .all-trials-status-status-col {
-  position: absolute;
-  left: 432px;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 36px;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1;
 }
 
 .all-trials-status-entry {
   width: 100%;
-  height: 60px;
-  display: flex;
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr) 120px;
   align-items: center;
+  column-gap: 26px;
   box-sizing: border-box;
-  position: relative;
-  padding: 0;
+  padding: 10px 40px 10px 106px;
 }
 
 .all-trials-status-entry-accent-40 {
@@ -140,31 +134,37 @@
   background: rgba(248, 221, 164, 0.3);
 }
 
+.all-trials-message-row {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 106px;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  background: rgba(248, 221, 164, 0.35);
+  box-sizing: border-box;
+}
+
 .all-trials-status-title {
-  position: absolute;
-  left: 106px;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 20px;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .all-trials-status-date {
-  position: absolute;
-  left: 432px;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 20px;
   font-weight: 700;
   color: #ffffff;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .all-trials-status-more-details {
-  position: absolute;
-  right: 40px;
-  top: 50%;
-  transform: translateY(-50%);
   background: none;
   border: 1px solid var(--accent-color);
   color: var(--accent-color);
@@ -173,10 +173,12 @@
   cursor: pointer;
   padding: 0 14px;
   height: 40px;
-  width: auto;
+  width: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
+  justify-self: end;
+  box-sizing: border-box;
 }
 
 .all-trials-status-more-details:hover:not(:disabled) {

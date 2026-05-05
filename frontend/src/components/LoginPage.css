@@ -1,0 +1,13 @@
+.login-page {
+  width: 1440px;
+  min-height: 2334px;
+  margin: 0 auto;
+  background: var(--accent-color);
+}
+
+.login-page-content {
+  width: 1111px;
+  margin: 67px auto 0;
+  display: flex;
+  justify-content: center;
+}
