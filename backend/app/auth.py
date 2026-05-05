@@ -26,7 +26,7 @@ ALGORITHM  = os.getenv("ALGORITHM", "HS256")
 EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
 pwd_context    = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme  = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme  = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 # ── Password helpers ────────────────────────────────────────────────────────
