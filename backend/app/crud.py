@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from typing import Optional, List
 
-#CRUD IS create Read Update Delete
+#CRUD IS Create Read Update Delete
 
 #Adds a new Trial to the database
 def create_trial(db: Session, trial: schemas.TrialCreate) -> models.Trial:
@@ -36,9 +36,6 @@ def search_trials(
     location: Optional[str] = None,
     status: Optional[str] = None,
     phase: Optional[str] = None,
-    remote_only: Optional[bool] = None,
-    study_type: Optional[str] = None,
-    compensation_required: Optional[bool] = None,
     skip: int = 0,
     limit: int = 50,
 ) -> List[models.Trial]:
@@ -56,15 +53,6 @@ def search_trials(
         query = query.filter(models.Trial.recruitment_status == status)
     if phase:
         query = query.filter(models.Trial.study_phase == phase)
-    if remote_only:
-        query = query.filter(models.Trial.remote_eligible == True)
-    if study_type:
-        query = query.filter(models.Trial.study_type.ilike(f"%{study_type}%"))
-    if compensation_required:
-        query = query.filter(
-            models.Trial.compensation.isnot(None),
-            models.Trial.compensation != "",
-        )
     
     return query.offset(skip).limit(limit).all()
 
@@ -225,37 +213,6 @@ def get_user_interactions(db: Session, user_id: str) -> List[models.TrialInterac
     return db.query(models.TrialInteraction).filter(
         models.TrialInteraction.user_id == user_id,
     ).all()
-
-
-def get_user_interaction_summary(db: Session, user_id: str) -> dict:
-    """Get per-user aggregate counts used by the participant dashboard."""
-    interactions = get_user_interactions(db, user_id)
-    views = sum(1 for item in interactions if item.action == "view")
-    saves = sum(1 for item in interactions if item.action == "save")
-    passes = sum(1 for item in interactions if item.action == "pass")
-
-    category_counts = {}
-    for item in interactions:
-        if item.trial_category:
-            category_counts[item.trial_category] = (
-                category_counts.get(item.trial_category, 0) + 1
-            )
-
-    top_categories = sorted(
-        category_counts.items(),
-        key=lambda category: category[1],
-        reverse=True,
-    )[:5]
-
-    return {
-        "user_id": user_id,
-        "total_views": views,
-        "total_saves": saves,
-        "total_passes": passes,
-        "top_categories": [
-            {"category": category, "count": count} for category, count in top_categories
-        ],
-    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────

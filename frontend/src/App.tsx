@@ -14,12 +14,31 @@ import TrialMoreDetailsPage from "./components/TrialMoreDetailsPage";
 import AllTrialsPage from "./components/AllTrialsPage";
 import UserAnalyticsPage from "./components/UserAnalyticsPage";
 import "./components/HomeButtons.css";
-import {
-  AuthSession,
-  getRememberedEmail,
-  loadSession,
-  storeSession,
-} from "./api";
+
+/*
+  Project progress so far:
+
+  1. The FastAPI backend is running successfully at http://127.0.0.1:8000.
+  2. The backend /health route was tested and returns {"status":"ok"}.
+  3. The backend uses SQLAlchemy for database models and queries.
+  4. Backend routes for trials, users, and clinics are mounted in main.py.
+  5. The old todo API code in frontend/src/api.ts was replaced with real clinical trial API functions.
+  6. AllTrialsPage now calls listTrials("diabetes") to fetch real trial data from the backend.
+  7. AllTrialsPage now handles loading, error, and empty states.
+  8. Real trial titles from the backend are now displayed on the frontend.
+  9. The More Info button now sends the clicked trial's id to App.tsx.
+  10. App.tsx stores the clicked trial id in selectedTrialId.
+  11. This was tested in the browser console and confirmed with:
+      Selected trial: 3e5ac6af-1a7b-4a90-a93e-fe766b424747
+
+  Current status:
+  The frontend can load real trials from the backend, and App.tsx knows which
+  trial was clicked when the user selects More Info.
+
+  Next step:
+  Pass selectedTrialId from App.tsx into TrialMoreDetailsPage, then use it to
+  fetch the full trial details with GET /trials/{trialId}.
+*/
 
 type AppView =
   | "home"
@@ -36,11 +55,8 @@ type ExperienceMode = "clinics" | "participants";
 
 export default function App() {
   const [view, setView] = useState<AppView>("home");
+  const [selectedTrialId, setSelectedTrialId] = useState<string | null>(null);
   const [experience, setExperience] = useState<ExperienceMode>("participants");
-  const [session, setSession] = useState<AuthSession | null>(() => loadSession());
-  const [rememberedEmail, setRememberedEmail] = useState<string>(() =>
-    getRememberedEmail(),
-  );
   const [clinicMoreBackView, setClinicMoreBackView] = useState<
     "all-trials" | "clinic-trial-card"
   >("all-trials");
@@ -50,40 +66,6 @@ export default function App() {
   }, [view, experience]);
 
   const pageLabel = `[${experience === "clinics" ? "clinic" : "participant"} - ${view}]`;
-
-  function handleAuthSuccess(authSession: AuthSession, isSignUp: boolean) {
-    setSession(authSession);
-    setRememberedEmail(authSession.email);
-    setExperience(authSession.role === "clinic" ? "clinics" : "participants");
-
-    if (isSignUp) {
-      setView("profile");
-      return;
-    }
-
-    if (authSession.profileCompleted) {
-      setView(authSession.role === "clinic" ? "all-trials" : "trials");
-    } else {
-      setView("profile");
-    }
-  }
-
-  function markProfileComplete() {
-    if (!session) {
-      return;
-    }
-    const nextSession = { ...session, profileCompleted: true };
-    setSession(nextSession);
-    storeSession(nextSession);
-  }
-
-  function requireSession(navigateTo: AppView): boolean {
-    if (session) {
-      return true;
-    }
-    setView("login");
-    return false;
-  }
 
   if (view === "home") {
     return (
@@ -108,9 +90,9 @@ export default function App() {
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
-        role="user"
-        initialEmail={rememberedEmail}
-        onAuthSuccess={handleAuthSuccess}
+        labelText="Sign in"
+        onCreateAccount={() => setView("profile")}
+        onNext={() => setView("profile")}
       />
     );
   }
@@ -124,20 +106,13 @@ export default function App() {
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
-        initialEmail={rememberedEmail}
-        onAuthSuccess={handleAuthSuccess}
+        onCreateAccount={() => setView("profile")}
+        onNext={() => setView("profile")}
       />
     );
   }
 
   if (view === "profile" && experience === "participants") {
-    if (!requireSession("profile")) {
-      return null;
-    }
-    const activeSession = session;
-    if (!activeSession) {
-      return null;
-    }
     return (
       <ProfileSetupPage
         selectedExperience={experience}
@@ -146,16 +121,11 @@ export default function App() {
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("trials")}
         onSelectExperience={setExperience}
-        session={activeSession}
-        onProfileSaved={markProfileComplete}
       />
     );
   }
 
   if (view === "profile" && experience === "clinics") {
-    if (!requireSession("profile")) {
-      return null;
-    }
     return (
       <ClinicProfileSetupPage
         selectedExperience={experience}
@@ -169,13 +139,6 @@ export default function App() {
   }
 
   if (view === "trials" && experience === "participants") {
-    if (!requireSession("trials")) {
-      return null;
-    }
-    const activeSession = session;
-    if (!activeSession) {
-      return null;
-    }
     return (
       <TrialPage
         selectedExperience={experience}
@@ -185,14 +148,16 @@ export default function App() {
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateMoreDetails={() => setView("trial-more-details")}
         onSelectExperience={setExperience}
-        session={activeSession}
       />
     );
   }
 
   if (view === "trial-more-details" && experience === "participants") {
+    
+
     return (
       <TrialMoreDetailsPage
+        trialId={selectedTrialId}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
         onNavigateProfile={() => setView("profile")}
@@ -204,13 +169,6 @@ export default function App() {
   }
 
   if (view === "all-trials" && experience === "participants") {
-    if (!requireSession("all-trials")) {
-      return null;
-    }
-    const activeSession = session;
-    if (!activeSession) {
-      return null;
-    }
     return (
       <AllTrialsPage
         selectedExperience={experience}
@@ -219,9 +177,11 @@ export default function App() {
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateFindTrials={() => setView("trials")}
-        onNavigateMoreDetails={() => setView("trial-more-details")}
+        onNavigateMoreDetails={(trialId) => {
+          setSelectedTrialId(trialId);
+          setView("trial-more-details");
+        }}
         onSelectExperience={setExperience}
-        session={activeSession}
       />
     );
   }
@@ -259,13 +219,6 @@ export default function App() {
   }
 
   if (view === "analytics" && experience === "participants") {
-    if (!requireSession("analytics")) {
-      return null;
-    }
-    const activeSession = session;
-    if (!activeSession) {
-      return null;
-    }
     return (
       <UserAnalyticsPage
         selectedExperience={experience}
@@ -275,7 +228,6 @@ export default function App() {
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateMoreDetails={() => setView("analytics-result-uses")}
         onSelectExperience={setExperience}
-        session={activeSession}
       />
     );
   }

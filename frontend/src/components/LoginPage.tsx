@@ -1,7 +1,6 @@
 import HomeNavBar from "./HomeNavBar";
 import LoginComponent from "./LoginComponent";
 import "./LoginPage.css";
-import { AuthSession, Role } from "../api";
 
 type LoginPageProps = {
   selectedExperience: "clinics" | "participants";
@@ -10,10 +9,10 @@ type LoginPageProps = {
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
-  role: Role;
-  initialEmail?: string;
+  labelText: string;
   secondaryLabelText?: string;
-  onAuthSuccess: (session: AuthSession, isSignUp: boolean) => void;
+  onCreateAccount: () => void;
+  onNext: () => void;
 };
 
 export default function LoginPage({
@@ -23,10 +22,10 @@ export default function LoginPage({
   onNavigateAnalytics,
   onNavigateAllTrials,
   onSelectExperience,
-  role,
-  initialEmail,
+  labelText,
   secondaryLabelText,
-  onAuthSuccess,
+  onCreateAccount,
+  onNext,
 }: LoginPageProps) {
   return (
     <main className="login-page">
@@ -41,10 +40,10 @@ export default function LoginPage({
 
       <section className="login-page-content" aria-label="Log in page">
         <LoginComponent
-          role={role}
-          initialEmail={initialEmail}
+          labelText={labelText}
           secondaryLabelText={secondaryLabelText}
-          onAuthSuccess={onAuthSuccess}
+          onCreateAccount={onCreateAccount}
+          onNext={onNext}
         />
       </section>
     </main>

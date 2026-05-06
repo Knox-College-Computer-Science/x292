@@ -1,7 +1,7 @@
 .trial-card {
   position: relative;
   width: 1111px;
-  min-height: 606px;
+  height: 606px;
   padding: 0;
   border-radius: 12px;
   background:
@@ -15,8 +15,7 @@
   top: 13px;
   left: 118px;
   margin: 0 0 64px;
-  max-width: 870px;
-  font-size: 34px;
+  font-size: 48px;
   font-weight: 700;
   line-height: 1;
   color: #ffffff;
@@ -27,7 +26,7 @@
   top: 77px;
   left: 118px;
   display: flex;
-  gap: 32px;
+  gap: 48px;
 }
 
 .trial-visual-box {
@@ -43,7 +42,7 @@
   flex-direction: column;
   gap: 8px;
   min-width: 0;
-  width: 388px;
+  width: 372px;
 }
 
 .trial-detail-row {
@@ -52,9 +51,9 @@
   gap: 12px;
   min-height: 48px;
   align-items: center;
-  font-size: 20px;
+  font-size: 42px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1;
   color: #ffffff;
 }
 
@@ -63,14 +62,14 @@
 }
 
 .trial-detail-date {
-  font-size: 20px;
+  font-size: 42px;
   font-weight: 700;
   line-height: 1;
   color: #ffffff;
 }
 
 .trial-detail-meta-right {
-  font-size: 16px;
+  font-size: 30px;
   font-weight: 700;
   line-height: 1;
   color: #ffffff;
@@ -81,32 +80,10 @@
   margin-top: 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
 }
 
 .trial-more-info-button {
   width: 165px;
   height: 50px;
-}
-
-.trial-actions-secondary {
-  display: flex;
-  gap: 8px;
-}
-
-.trial-pass-button,
-.trial-save-button {
-  width: 92px;
-  height: 44px;
-  font-size: 16px;
-}
-
-.trial-card-empty-copy {
-  position: absolute;
-  top: 110px;
-  left: 118px;
-  width: 520px;
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.2;
 }

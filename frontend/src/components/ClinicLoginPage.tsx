@@ -1,7 +1,6 @@
 import HomeNavBar from "./HomeNavBar";
 import ClinicLoginComponent from "./ClinicLoginComponent";
 import "./LoginPage.css";
-import { AuthSession } from "../api";
 
 type ClinicLoginPageProps = {
   selectedExperience: "clinics" | "participants";
@@ -10,8 +9,8 @@ type ClinicLoginPageProps = {
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
-  initialEmail?: string;
-  onAuthSuccess: (session: AuthSession, isSignUp: boolean) => void;
+  onCreateAccount: () => void;
+  onNext: () => void;
 };
 
 export default function ClinicLoginPage({
@@ -21,8 +20,8 @@ export default function ClinicLoginPage({
   onNavigateAnalytics,
   onNavigateAllTrials,
   onSelectExperience,
-  initialEmail,
-  onAuthSuccess,
+  onCreateAccount,
+  onNext,
 }: ClinicLoginPageProps) {
   return (
     <main className="login-page">
@@ -37,8 +36,8 @@ export default function ClinicLoginPage({
 
       <section className="login-page-content" aria-label="Clinic log in page">
         <ClinicLoginComponent
-          initialEmail={initialEmail}
-          onAuthSuccess={onAuthSuccess}
+          onCreateAccount={onCreateAccount}
+          onNext={onNext}
         />
       </section>
     </main>

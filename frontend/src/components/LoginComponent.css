@@ -1,11 +1,9 @@
 .login-component {
   position: relative;
   width: 584px;
-  min-height: 720px;
+  height: 680px;
   background: var(--main-color);
-  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.18);
 }
 
 .login-logo-placeholder {
@@ -20,7 +18,7 @@
 .login-form {
   position: absolute;
   left: 44px;
-  top: 140px;
+  top: 190px;
   width: 496px;
 }
 
@@ -30,33 +28,31 @@
 }
 
 .login-field-group-secondary {
-  margin-top: 18px;
+  margin-top: 12px;
 }
 
 .login-field-label {
   display: block;
   margin-bottom: 6px;
   color: var(--accent-color);
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
 }
 
 .login-input {
   width: 100%;
-  height: 56px;
-  border: 2px solid var(--accent-color);
-  border-radius: 6px;
+  height: 58px;
+  border: 3px solid var(--accent-color);
   background: transparent;
   color: var(--accent-color);
   padding: 0 14px;
   font: inherit;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .login-input:focus {
-  outline: 2px solid rgba(248, 221, 164, 0.5);
-  outline-offset: 2px;
+  outline: none;
 }
 
 .login-forgot-email {
@@ -67,7 +63,7 @@
   border: 0;
   background: transparent;
   color: var(--accent-color);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
@@ -75,8 +71,8 @@
 
 .login-actions {
   position: absolute;
-  right: 44px;
-  bottom: 44px;
+  right: 52px;
+  bottom: 50px;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -84,17 +80,6 @@
 
 .login-create-account,
 .login-next {
-  width: 210px;
+  width: 165px;
   height: 50px;
-}
-
-.login-create-account {
-  font-size: 22px;
-}
-
-.login-error {
-  margin-top: 18px;
-  color: #ffe8c5;
-  font-size: 15px;
-  line-height: 1.3;
 }

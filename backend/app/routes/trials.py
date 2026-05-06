@@ -19,15 +19,6 @@ def list_trials(
     location: Optional[str] = Query(None, description="Location filter"),
     status: Optional[str] = Query(None, description="Recruitment status"),
     phase: Optional[str] = Query(None, description="Study phase"),
-    remote_only: Optional[bool] = Query(
-        None,
-        description="Only include trials that support remote participation",
-    ),
-    study_type: Optional[str] = Query(None, description="Filter by study type"),
-    compensation_required: Optional[bool] = Query(
-        None,
-        description="Only include trials with compensation details",
-    ),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db)
@@ -37,18 +28,7 @@ def list_trials(
     Fetches from ClinicalTrials.gov if not already stored locally.
     """
     # First search local database
-    trials = crud.search_trials(
-        db,
-        condition=condition,
-        location=location,
-        status=status,
-        phase=phase,
-        remote_only=remote_only,
-        study_type=study_type,
-        compensation_required=compensation_required,
-        skip=skip,
-        limit=limit,
-    )
+    trials = crud.search_trials(db, condition, location, status, phase, skip, limit)
 
     if trials:
         return trials
@@ -76,18 +56,7 @@ def list_trials(
         )
 
     # Re-search after saving fetched trials
-    trials = crud.search_trials(
-        db,
-        condition=condition,
-        location=location,
-        status=status,
-        phase=phase,
-        remote_only=remote_only,
-        study_type=study_type,
-        compensation_required=compensation_required,
-        skip=skip,
-        limit=limit,
-    )
+    trials = crud.search_trials(db, condition, location, status, phase, skip, limit)
 
     if not trials:
         raise HTTPException(
@@ -171,24 +140,6 @@ def get_user_saved_trials(
     """Get all trials saved by a user"""
     trials = crud.get_saved_trials(db, user_id, skip, limit)
     return trials
-
-
-@router.get("/user/{user_id}/passed")
-def get_user_passed_trials(
-    user_id: str,
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db)
-):
-    """Get all trials passed by a user"""
-    trials = crud.get_passed_trials(db, user_id, skip, limit)
-    return trials
-
-
-@router.get("/user/{user_id}/summary")
-def get_user_summary(user_id: str, db: Session = Depends(get_db)):
-    """Get account-level interaction summary for participant dashboard."""
-    return crud.get_user_interaction_summary(db, user_id)
 
 
 # ───────────────────────────────────────────────────────────────────
