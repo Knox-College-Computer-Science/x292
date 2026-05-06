@@ -1,6 +1,6 @@
-.all-trials-page {
-  width: 1440px;
-  min-height: 2334px;
+﻿.all-trials-page {
+  width: min(1440px, 100%);
+  min-height: 100vh;
   margin: 0 auto;
   background: var(--accent-color);
 }
@@ -8,160 +8,131 @@
 .all-trials-content {
   display: flex;
   flex-direction: column;
-  gap: 36px;
-  width: 1111px;
-  margin: 78px auto 0;
+  gap: 28px;
+  width: min(1111px, 94%);
+  margin: 34px auto 0;
+  padding-bottom: 46px;
 }
 
-/* Up Next Box */
-.all-trials-up-next {
-  width: 1111px;
+.all-trials-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(129, 52, 5, 0.15);
+}
+
+.all-trials-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--main-color);
+  font-weight: 700;
+}
+
+.all-trials-filters input,
+.all-trials-filters select {
+  border: 1px solid rgba(129, 52, 5, 0.4);
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+  background: #fff8e8;
+}
+
+.all-trials-checkbox {
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.all-trials-up-next,
+.all-trials-status {
+  width: 100%;
   background: var(--main-color);
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 180px;
-  border-bottom: 60px solid var(--main-color);
-  box-sizing: border-box;
 }
 
-.all-trials-up-next-header {
+.all-trials-up-next-header,
+.all-trials-status-header {
   width: 100%;
-  height: 60px;
+  min-height: 58px;
   display: flex;
   align-items: center;
-  padding: 0 0 0 106px;
-  font-size: 36px;
+  padding: 0 24px;
+  font-size: 30px;
   font-weight: 700;
   color: #ffffff;
-  box-sizing: border-box;
-  line-height: 1;
-  background: var(--main-color);
 }
 
 .all-trials-up-next-entry {
   width: 100%;
-  min-height: 60px;
+  min-height: 68px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: minmax(0, 1fr) 180px;
   align-items: center;
-  column-gap: 24px;
-  box-sizing: border-box;
-  padding: 12px 106px;
+  column-gap: 20px;
+  padding: 10px 24px;
 }
 
-.all-trials-up-next-entry-accent-40 {
-  background: rgba(248, 221, 164, 0.4);
-}
-
-.all-trials-up-next-entry-accent-30 {
-  background: rgba(248, 221, 164, 0.3);
-}
-
-.all-trials-up-next-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-  min-width: 0;
-}
-
-.all-trials-up-next-date {
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.25;
-  text-align: right;
-}
-
-/* Status Box */
-.all-trials-status {
-  width: 1111px;
-  background: var(--main-color);
-  border-radius: 20px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 540px;
-  border-bottom: 60px solid var(--main-color);
-  box-sizing: border-box;
-}
-
-.all-trials-status-header {
-  width: 100%;
-  height: 60px;
-  display: grid;
-  grid-template-columns: minmax(0, 300px) minmax(0, 1fr) 120px;
-  align-items: center;
-  column-gap: 26px;
-  box-sizing: border-box;
-  padding: 0 40px 0 106px;
-  background: var(--main-color);
-}
-
-.all-trials-status-trial-col {
-  font-size: 36px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
-}
-
-.all-trials-status-status-col {
-  font-size: 36px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
-}
-
-.all-trials-status-entry {
-  width: 100%;
-  min-height: 60px;
-  display: grid;
-  grid-template-columns: minmax(0, 300px) minmax(0, 1fr) 120px;
-  align-items: center;
-  column-gap: 26px;
-  box-sizing: border-box;
-  padding: 10px 40px 10px 106px;
-}
-
+.all-trials-up-next-entry-accent-40,
 .all-trials-status-entry-accent-40 {
   background: rgba(248, 221, 164, 0.4);
 }
 
+.all-trials-up-next-entry-accent-30,
 .all-trials-status-entry-accent-30 {
   background: rgba(248, 221, 164, 0.3);
 }
 
+.all-trials-up-next-title,
+.all-trials-up-next-date,
+.all-trials-status-title,
+.all-trials-status-date {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.3;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.all-trials-match-reason {
+  display: block;
+  margin-top: 5px;
+  color: #fff4dc;
+  font-size: 14px;
+}
+
+.all-trials-status-header {
+  display: grid;
+  grid-template-columns: minmax(0, 310px) minmax(0, 1fr) 120px;
+  column-gap: 20px;
+}
+
+.all-trials-status-entry {
+  width: 100%;
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: minmax(0, 310px) minmax(0, 1fr) 120px;
+  align-items: center;
+  column-gap: 20px;
+  padding: 10px 24px;
+}
+
 .all-trials-message-row {
-  min-height: 60px;
+  min-height: 68px;
   display: flex;
   align-items: center;
-  padding: 0 106px;
+  padding: 0 24px;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   background: rgba(248, 221, 164, 0.35);
-  box-sizing: border-box;
-}
-
-.all-trials-status-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-  min-width: 0;
-}
-
-.all-trials-status-date {
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-  min-width: 0;
 }
 
 .all-trials-status-more-details {
@@ -178,7 +149,6 @@
   align-items: center;
   justify-content: center;
   justify-self: end;
-  box-sizing: border-box;
 }
 
 .all-trials-status-more-details:hover:not(:disabled) {
@@ -186,15 +156,28 @@
 }
 
 .all-trials-actions {
-  margin-top: 50px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 20px;
 }
 
-.all-trials-back,
-.all-trials-find-trials {
-  width: 165px;
-  height: 50px;
+@media (max-width: 1000px) {
+  .all-trials-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .all-trials-status-header,
+  .all-trials-status-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .all-trials-status-more-details {
+    justify-self: start;
+  }
+
+  .all-trials-up-next-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

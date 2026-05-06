@@ -1,41 +1,298 @@
-import "./ProfileSetupCard.css";
+﻿import "./ProfileSetupCard.css";
 
-export default function ProfileSetupCard() {
+export type ProfileFormValues = {
+  full_name: string;
+  phone: string;
+  location: string;
+  health_conditions: string;
+  trial_interests: string;
+  age_range_min: string;
+  age_range_max: string;
+  participation_preference: string;
+  travel_willingness: string;
+  max_distance_miles: string;
+  preferred_recruitment_status: string;
+  preferred_study_phase: string;
+  compensation_required: boolean;
+  time_commitment: string;
+  notification_preferences: string;
+  accessibility_needs: string;
+};
+
+type ProfileSetupCardProps = {
+  values: ProfileFormValues;
+  matchingFields: Record<string, boolean>;
+  onFieldChange: (
+    field: keyof ProfileFormValues,
+    value: string | boolean
+  ) => void;
+  onMatchingFieldToggle: (field: string, enabled: boolean) => void;
+};
+
+export default function ProfileSetupCard({
+  values,
+  matchingFields,
+  onFieldChange,
+  onMatchingFieldToggle,
+}: ProfileSetupCardProps) {
   return (
     <section className="profile-card" aria-label="Profile setup form">
       <form id="profile-setup-form" className="profile-form">
         <label>
-          <span>Username</span>
-          <input type="text" name="username" />
+          <span>Full Name</span>
+          <input
+            type="text"
+            value={values.full_name}
+            onChange={(event) => onFieldChange("full_name", event.target.value)}
+          />
         </label>
+
         <label>
-          <span>Age</span>
-          <input type="number" name="age" />
+          <span>Phone</span>
+          <input
+            type="text"
+            value={values.phone}
+            onChange={(event) => onFieldChange("phone", event.target.value)}
+          />
         </label>
+
         <label>
           <span>Location</span>
-          <input type="text" name="location" />
+          <input
+            type="text"
+            value={values.location}
+            onChange={(event) => onFieldChange("location", event.target.value)}
+            placeholder="City, State"
+          />
         </label>
+
         <label>
-          <span>Study Type</span>
-          <input type="text" name="studyType" />
+          <span>Conditions / Interests</span>
+          <input
+            type="text"
+            value={values.health_conditions}
+            onChange={(event) =>
+              onFieldChange("health_conditions", event.target.value)
+            }
+            placeholder="diabetes, oncology"
+          />
         </label>
+
         <label>
-          <span>Compensation</span>
-          <input type="text" name="compensation" />
+          <span>Age Range Min</span>
+          <input
+            type="number"
+            value={values.age_range_min}
+            onChange={(event) =>
+              onFieldChange("age_range_min", event.target.value)
+            }
+          />
         </label>
+
         <label>
-          <span>Time Commitment</span>
-          <input type="text" name="timeCommitment" />
+          <span>Age Range Max</span>
+          <input
+            type="number"
+            value={values.age_range_max}
+            onChange={(event) =>
+              onFieldChange("age_range_max", event.target.value)
+            }
+          />
         </label>
+
         <label>
-          <span>Remote or In-Person</span>
-          <input type="text" name="participationType" />
+          <span>Participation Preference</span>
+          <select
+            value={values.participation_preference}
+            onChange={(event) =>
+              onFieldChange("participation_preference", event.target.value)
+            }
+          >
+            <option value="Either">Either</option>
+            <option value="Remote">Remote</option>
+            <option value="In-person">In-person</option>
+          </select>
         </label>
+
+        <label>
+          <span>Travel Willingness</span>
+          <select
+            value={values.travel_willingness}
+            onChange={(event) =>
+              onFieldChange("travel_willingness", event.target.value)
+            }
+          >
+            <option value="Local only">Local only</option>
+            <option value="Within state">Within state</option>
+            <option value="Nationwide">Nationwide</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Max Distance (miles)</span>
+          <input
+            type="number"
+            value={values.max_distance_miles}
+            onChange={(event) =>
+              onFieldChange("max_distance_miles", event.target.value)
+            }
+          />
+        </label>
+
+        <label>
+          <span>Recruitment Status Filter</span>
+          <select
+            value={values.preferred_recruitment_status}
+            onChange={(event) =>
+              onFieldChange("preferred_recruitment_status", event.target.value)
+            }
+          >
+            <option value="Recruiting">Recruiting</option>
+            <option value="Not yet recruiting">Not yet recruiting</option>
+            <option value="Any">Any</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Study Phase Filter</span>
+          <select
+            value={values.preferred_study_phase}
+            onChange={(event) =>
+              onFieldChange("preferred_study_phase", event.target.value)
+            }
+          >
+            <option value="">Any phase</option>
+            <option value="Phase 1">Phase 1</option>
+            <option value="Phase 2">Phase 2</option>
+            <option value="Phase 3">Phase 3</option>
+            <option value="Phase 4">Phase 4</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Notifications</span>
+          <select
+            value={values.notification_preferences}
+            onChange={(event) =>
+              onFieldChange("notification_preferences", event.target.value)
+            }
+          >
+            <option value="Email">Email</option>
+            <option value="SMS">SMS</option>
+            <option value="Both">Both</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Weekly Time Commitment</span>
+          <input
+            type="text"
+            value={values.time_commitment}
+            onChange={(event) =>
+              onFieldChange("time_commitment", event.target.value)
+            }
+            placeholder="e.g. 2-3 hours"
+          />
+        </label>
+
+        <label className="profile-checkbox-row">
+          <input
+            type="checkbox"
+            checked={values.compensation_required}
+            onChange={(event) =>
+              onFieldChange("compensation_required", event.target.checked)
+            }
+          />
+          <span>Only show trials with listed compensation</span>
+        </label>
+
         <label className="profile-form-wide">
-          <span>Preferences</span>
-          <textarea name="preferences" rows={4} />
+          <span>Trial Topic Preferences</span>
+          <textarea
+            value={values.trial_interests}
+            onChange={(event) =>
+              onFieldChange("trial_interests", event.target.value)
+            }
+            rows={3}
+          />
         </label>
+
+        <label className="profile-form-wide">
+          <span>Accessibility Needs</span>
+          <textarea
+            value={values.accessibility_needs}
+            onChange={(event) =>
+              onFieldChange("accessibility_needs", event.target.value)
+            }
+            rows={3}
+          />
+        </label>
+
+        <div className="profile-form-wide privacy-card">
+          <h3>Privacy Matching Controls</h3>
+          <p>
+            Disable any field below to keep it stored in your profile but excluded
+            from future recommendation scoring.
+          </p>
+
+          <label className="profile-checkbox-row">
+            <input
+              type="checkbox"
+              checked={matchingFields.location ?? true}
+              onChange={(event) =>
+                onMatchingFieldToggle("location", event.target.checked)
+              }
+            />
+            <span>Use location for matching</span>
+          </label>
+
+          <label className="profile-checkbox-row">
+            <input
+              type="checkbox"
+              checked={matchingFields.health_conditions ?? true}
+              onChange={(event) =>
+                onMatchingFieldToggle("health_conditions", event.target.checked)
+              }
+            />
+            <span>Use conditions/interests for matching</span>
+          </label>
+
+          <label className="profile-checkbox-row">
+            <input
+              type="checkbox"
+              checked={matchingFields.age_range ?? true}
+              onChange={(event) =>
+                onMatchingFieldToggle("age_range", event.target.checked)
+              }
+            />
+            <span>Use age range for matching</span>
+          </label>
+
+          <label className="profile-checkbox-row">
+            <input
+              type="checkbox"
+              checked={matchingFields.participation_preference ?? true}
+              onChange={(event) =>
+                onMatchingFieldToggle(
+                  "participation_preference",
+                  event.target.checked
+                )
+              }
+            />
+            <span>Use participation preference for matching</span>
+          </label>
+
+          <label className="profile-checkbox-row">
+            <input
+              type="checkbox"
+              checked={matchingFields.travel_willingness ?? true}
+              onChange={(event) =>
+                onMatchingFieldToggle("travel_willingness", event.target.checked)
+              }
+            />
+            <span>Use travel willingness for matching</span>
+          </label>
+        </div>
       </form>
     </section>
   );

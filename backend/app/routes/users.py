@@ -1,58 +1,45 @@
-"""
-routes/users.py
----------------
-Endpoints:
-  POST   /auth/register       Create a new user account
-  POST   /auth/login          Login and receive JWT token
-  GET    /users/me            Get current user's profile
-  PUT    /users/me            Update current user's profile
-  GET    /users/me/privacy    Get privacy/matching field settings
-  PUT    /users/me/privacy    Update which fields are used for matching
-
-Account Creation Flow (maps to 3 registration steps in frontend):
-  - Frontend collects all 3 steps, then sends one POST /auth/register
-  - User row is created first (email + hashed password)
-  - UserProfile row is created with all collected fields
-  - Profile is flagged profile_completed=True on final submit
-"""
-
-from fastapi import APIRouter, Depends, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ..database import get_db
-from ..auth import hash_password, verify_password, create_access_token, get_current_user
+
 from .. import models, schemas
+from ..auth import create_access_token, get_current_user, hash_password, verify_password
+from ..database import get_db
 
 router = APIRouter()
 
 
-# ── Auth ────────────────────────────────────────────────────────────────────
-
 @router.post("/auth/register", response_model=schemas.TokenResponse, status_code=201)
 def register(payload: schemas.UserRegister, db: Session = Depends(get_db)):
-    """
-    Step: User submits completed 3-step registration form.
-    Creates User + UserProfile rows in one transaction.
-    Returns JWT so the user is immediately logged in.
-    """
     if db.query(models.User).filter(models.User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
+
+    role = payload.role if payload.role in {"user", "clinic", "admin"} else "user"
 
     user = models.User(
         email=payload.email,
         hashed_password=hash_password(payload.password),
-        role=payload.role,
+        role=role,
     )
     db.add(user)
-    db.flush()  # assigns user.id before profile FK
+    db.flush()
 
-    # Empty profile shell — filled by /users/me PUT after registration
-    profile = models.UserProfile(user_id=user.id, full_name="", profile_completed=False)
+    profile_seed_name = payload.email.split("@")[0].replace(".", " ").title() or "Participant"
+    profile = models.UserProfile(
+        user_id=user.id,
+        full_name=profile_seed_name,
+        profile_completed=False,
+    )
     db.add(profile)
     db.commit()
     db.refresh(user)
 
     token = create_access_token({"sub": user.id, "role": user.role})
-    return {"access_token": token}
+    return {
+        "access_token": token,
+        "user_id": user.id,
+        "role": user.role,
+        "profile_completed": bool(user.profile and user.profile.profile_completed),
+    }
 
 
 @router.post("/auth/login", response_model=schemas.TokenResponse)
@@ -60,30 +47,36 @@ def login(payload: schemas.UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == payload.email).first()
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
     token = create_access_token({"sub": user.id, "role": user.role})
-    return {"access_token": token}
+    return {
+        "access_token": token,
+        "user_id": user.id,
+        "role": user.role,
+        "profile_completed": bool(user.profile and user.profile.profile_completed),
+    }
 
-
-# ── Profile ─────────────────────────────────────────────────────────────────
 
 @router.get("/users/me", response_model=schemas.UserProfileResponse)
 def get_my_profile(
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    
-    """
-    Returns the full profile for the logged-in user.
-    Used by the Profile page and to personalize trial matching.
-    """
-
-    profile = db.query(models.UserProfile).filter(
-        models.UserProfile.user_id == current_user.id
-    ).first()
+    profile = (
+        db.query(models.UserProfile)
+        .filter(models.UserProfile.user_id == current_user.id)
+        .first()
+    )
     if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        profile = models.UserProfile(
+            user_id=current_user.id,
+            full_name=current_user.email.split("@")[0].title() or "Participant",
+            profile_completed=False,
+        )
+        db.add(profile)
+        db.commit()
+        db.refresh(profile)
 
-    # Merge email into profile response
     result = {**profile.__dict__, "email": current_user.email}
     return result
 
@@ -92,19 +85,26 @@ def get_my_profile(
 def update_my_profile(
     payload: schemas.UserProfileUpdate,
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    """
-    Partial update — only provided fields are changed.
-    Called after each registration step and from the Profile edit page.
-    """
-    profile = db.query(models.UserProfile).filter(
-        models.UserProfile.user_id == current_user.id
-    ).first()
+    profile = (
+        db.query(models.UserProfile)
+        .filter(models.UserProfile.user_id == current_user.id)
+        .first()
+    )
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
     update_data = payload.model_dump(exclude_unset=True)
+    if (
+        "age_range_min" in update_data
+        and "age_range_max" in update_data
+        and update_data["age_range_min"] is not None
+        and update_data["age_range_max"] is not None
+        and update_data["age_range_min"] > update_data["age_range_max"]
+    ):
+        raise HTTPException(status_code=400, detail="Age range min must be <= max")
+
     for field, value in update_data.items():
         setattr(profile, field, value)
 
@@ -113,26 +113,33 @@ def update_my_profile(
     return {**profile.__dict__, "email": current_user.email}
 
 
-# ── Privacy settings ─────────────────────────────────────────────────────────
-
 @router.get("/users/me/privacy")
 def get_privacy_settings(
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    """
-    Returns which profile fields are currently enabled for trial matching.
-    Displayed on the Privacy Settings page.
-    """
-    profile = db.query(models.UserProfile).filter(
-        models.UserProfile.user_id == current_user.id
-    ).first()
+    profile = (
+        db.query(models.UserProfile)
+        .filter(models.UserProfile.user_id == current_user.id)
+        .first()
+    )
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+
     return {
-        "stored_fields": ["full_name", "email", "phone", "location", "age",
-                          "gender", "ethnicity", "health_conditions",
-                          "trial_interests", "swipe_history"],
+        "stored_fields": [
+            "full_name",
+            "email",
+            "phone",
+            "location",
+            "age_range_min",
+            "age_range_max",
+            "health_conditions",
+            "trial_interests",
+            "participation_preference",
+            "travel_willingness",
+            "swipe_history",
+        ],
         "matching_fields_enabled": profile.matching_fields_enabled,
     }
 
@@ -141,18 +148,20 @@ def get_privacy_settings(
 def update_privacy_settings(
     payload: schemas.PrivacySettingsUpdate,
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    """
-    Toggles which fields are used in the matching algorithm.
-    When a field is set to False, it is excluded from recommendations.
-    """
-    profile = db.query(models.UserProfile).filter(
-        models.UserProfile.user_id == current_user.id
-    ).first()
+    profile = (
+        db.query(models.UserProfile)
+        .filter(models.UserProfile.user_id == current_user.id)
+        .first()
+    )
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
     profile.matching_fields_enabled = payload.matching_fields_enabled
     db.commit()
-    return {"message": "Privacy settings updated", "matching_fields_enabled": profile.matching_fields_enabled}
+
+    return {
+        "message": "Privacy settings updated",
+        "matching_fields_enabled": profile.matching_fields_enabled,
+    }

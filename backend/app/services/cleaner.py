@@ -1,10 +1,7 @@
-#takes one raw study from the API and turns it into a smaller, simpler version.
-# backend/app/services/cleaner.py
+﻿from typing import Dict, List, Optional
 
-from typing import Optional, List, Dict
 
 def clean_trial(study: dict) -> Dict:
-    """Transform raw ClinicalTrials.gov response into clean structure"""
     protocol = study.get("protocolSection", {})
     identification = protocol.get("identificationModule", {})
     status = protocol.get("statusModule", {})
@@ -16,25 +13,51 @@ def clean_trial(study: dict) -> Dict:
     description = protocol.get("descriptionModule", {})
 
     locations = _extract_locations(contacts)
-    compensation = _extract_compensation(protocol)
+    condition_list = conditions.get("conditions", [])
+    condition_text = ", ".join(condition_list) if condition_list else "Unspecified"
+
+    nct_id = identification.get("nctId")
+    start_date = _extract_date(status.get("startDateStruct"))
+    end_date = _extract_date(status.get("completionDateStruct"))
+
+    eligibility_criteria = eligibility.get("eligibilityCriteria")
 
     return {
-        "nct_id": identification.get("nctId"),
-        "title": identification.get("briefTitle"),
-        "condition": ", ".join(conditions.get("conditions", [])) if conditions.get("conditions") else "",
-        "location": locations[0] if locations else "Not provided",
+        "nct_id": nct_id,
+        "title": identification.get("briefTitle") or "Untitled study",
+        "condition": condition_text,
+        "category": condition_list[0] if condition_list else "General",
+        "location": locations[0] if locations else "Location not listed",
         "study_type": design.get("studyType"),
-        "study_description": description.get("briefSummary"),
-        "study_phase": design.get("phases", [None])[0] if design.get("phases") else None,
+        "study_description": description.get("briefSummary")
+        or description.get("detailedDescription")
+        or "Description not provided",
+        "study_phase": (design.get("phases") or [None])[0],
         "recruitment_status": status.get("overallStatus", "Unknown"),
-        "compensation": compensation,
-        "eligibility_summary": eligibility.get("eligibilityCriteria"),
-        "sponsor": sponsor.get("leadSponsor", {}).get("name") if sponsor.get("leadSponsor") else None,
+        "compensation": _extract_compensation(protocol),
+        "duration": _build_duration(start_date, end_date),
+        "visit_frequency": "Not listed",
+        "time_commitment": "Not listed",
+        "start_date": start_date,
+        "end_date": end_date,
+        "eligibility_age_min": _parse_age(eligibility.get("minimumAge")),
+        "eligibility_age_max": _parse_age(eligibility.get("maximumAge")),
+        "eligibility_gender": eligibility.get("sex", "All"),
+        "eligibility_conditions": condition_text,
+        "eligibility_summary": eligibility_criteria,
+        "remote_eligible": _is_remote_eligible(
+            description.get("briefSummary"),
+            description.get("detailedDescription"),
+            locations,
+        ),
+        "sponsor": sponsor.get("leadSponsor", {}).get("name")
+        if sponsor.get("leadSponsor")
+        else None,
+        "contact_link": f"https://clinicaltrials.gov/study/{nct_id}" if nct_id else None,
     }
 
 
 def _extract_locations(contacts: dict) -> List[str]:
-    """Extract city, state, country from contact/location info"""
     locations = []
 
     for facility in contacts.get("locations", []):
@@ -45,11 +68,10 @@ def _extract_locations(contacts: dict) -> List[str]:
         if loc_str:
             locations.append(loc_str)
 
-    return list(set(locations))
+    return list(dict.fromkeys(locations))
 
 
 def _extract_compensation(protocol: dict) -> Optional[str]:
-    """Extract compensation info if available"""
     comp_module = protocol.get("compensationModule", {})
 
     comp_type = comp_module.get("compensationType")
@@ -61,3 +83,40 @@ def _extract_compensation(protocol: dict) -> Optional[str]:
         return comp_type
 
     return None
+
+
+def _extract_date(date_struct: Optional[dict]) -> Optional[str]:
+    if not date_struct:
+        return None
+    return date_struct.get("date")
+
+
+def _build_duration(start_date: Optional[str], end_date: Optional[str]) -> Optional[str]:
+    if start_date and end_date:
+        return f"{start_date} to {end_date}"
+    return start_date or end_date
+
+
+def _parse_age(age_text: Optional[str]) -> Optional[int]:
+    if not age_text:
+        return None
+
+    first_token = age_text.strip().split(" ")[0]
+    if first_token.isdigit():
+        return int(first_token)
+    return None
+
+
+def _is_remote_eligible(
+    brief_summary: Optional[str], detailed_description: Optional[str], locations: List[str]
+) -> bool:
+    haystack = " ".join(
+        [
+            brief_summary or "",
+            detailed_description or "",
+            " ".join(locations),
+        ]
+    ).lower()
+
+    keywords = ["remote", "virtual", "telehealth", "at home", "home-based"]
+    return any(keyword in haystack for keyword in keywords)

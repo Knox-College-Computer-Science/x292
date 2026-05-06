@@ -1,89 +1,103 @@
-.trial-card {
-  position: relative;
-  width: 1111px;
-  height: 606px;
-  padding: 0;
+﻿.trial-card {
+  width: min(1111px, 100%);
   border-radius: 12px;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    linear-gradient(rgba(129, 52, 5, 0.58), rgba(129, 52, 5, 0.58)),
     var(--accent-color);
   color: #ffffff;
+  padding: 24px;
+}
+
+.trial-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
 }
 
 .trial-card-title {
-  position: absolute;
-  top: 13px;
-  left: 118px;
-  margin: 0 0 64px;
-  font-size: 48px;
+  margin: 0;
+  font-size: clamp(1.5rem, 1rem + 1.5vw, 2.2rem);
+  line-height: 1.2;
+}
+
+.trial-card-counter {
   font-weight: 700;
-  line-height: 1;
-  color: #ffffff;
+  color: #fbe8c0;
 }
 
 .trial-card-grid {
-  position: absolute;
-  top: 77px;
-  left: 118px;
-  display: flex;
-  gap: 48px;
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(260px, 42%) minmax(0, 1fr);
+  gap: 20px;
 }
 
 .trial-visual-box {
-  width: 520px;
-  height: 475px;
-  background: rgba(248, 221, 164, 0.4);
+  min-height: 320px;
+  background: rgba(248, 221, 164, 0.28);
   border-radius: 10px;
-  flex-shrink: 0;
+  padding: 16px;
+}
+
+.trial-visual-condition {
+  margin: 0;
+  font-size: 1.12rem;
+  line-height: 1.45;
+}
+
+.trial-match-reasons {
+  margin-top: 16px;
+  font-size: 0.95rem;
+  color: #fff0d4;
 }
 
 .trial-details-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-  width: 372px;
+  gap: 10px;
 }
 
 .trial-detail-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
   gap: 12px;
-  min-height: 48px;
-  align-items: center;
-  font-size: 42px;
-  font-weight: 700;
-  line-height: 1;
-  color: #ffffff;
+  align-items: start;
 }
 
 .trial-detail-label {
-  min-width: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fbe7bb;
 }
 
-.trial-detail-date {
-  font-size: 42px;
-  font-weight: 700;
-  line-height: 1;
-  color: #ffffff;
-}
-
-.trial-detail-meta-right {
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1;
-  color: #ffffff;
-  text-align: right;
+.trial-detail-value {
+  font-size: 0.98rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .trial-actions-row {
-  margin-top: 20px;
+  margin-top: 12px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .trial-more-info-button {
-  width: 165px;
-  height: 50px;
+  min-width: 145px;
+}
+
+@media (max-width: 920px) {
+  .trial-card {
+    padding: 18px;
+  }
+
+  .trial-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trial-visual-box {
+    min-height: 180px;
+  }
 }

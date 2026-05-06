@@ -5,6 +5,7 @@ __pycache__/
 venv/
 .env
 app.db
+app_v2.db
 
 # Node
 node_modules/

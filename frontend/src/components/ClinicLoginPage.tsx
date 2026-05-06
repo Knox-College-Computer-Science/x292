@@ -1,4 +1,4 @@
-import HomeNavBar from "./HomeNavBar";
+﻿import HomeNavBar from "./HomeNavBar";
 import ClinicLoginComponent from "./ClinicLoginComponent";
 import "./LoginPage.css";
 
@@ -9,8 +9,16 @@ type ClinicLoginPageProps = {
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
-  onCreateAccount: () => void;
-  onNext: () => void;
+  rememberedEmail?: string;
+  onAuthenticate: (payload: {
+    mode: "sign-in" | "create";
+    email: string;
+    password: string;
+    organization?: string;
+    rememberEmail: boolean;
+  }) => void | Promise<void>;
+  isLoading?: boolean;
+  errorMessage?: string | null;
 };
 
 export default function ClinicLoginPage({
@@ -20,8 +28,10 @@ export default function ClinicLoginPage({
   onNavigateAnalytics,
   onNavigateAllTrials,
   onSelectExperience,
-  onCreateAccount,
-  onNext,
+  rememberedEmail,
+  onAuthenticate,
+  isLoading,
+  errorMessage,
 }: ClinicLoginPageProps) {
   return (
     <main className="login-page">
@@ -36,8 +46,10 @@ export default function ClinicLoginPage({
 
       <section className="login-page-content" aria-label="Clinic log in page">
         <ClinicLoginComponent
-          onCreateAccount={onCreateAccount}
-          onNext={onNext}
+          rememberedEmail={rememberedEmail}
+          onAuthenticate={onAuthenticate}
+          isLoading={isLoading}
+          errorMessage={errorMessage}
         />
       </section>
     </main>

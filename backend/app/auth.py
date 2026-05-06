@@ -1,44 +1,28 @@
-"""
-auth.py
--------
-JWT authentication helpers.
-Used by routes to protect endpoints and identify the current user.
-
-Flow:
-  1. POST /auth/register  → hash password → create User row
-  2. POST /auth/login     → verify password → return JWT token
-  3. Protected routes     → client sends  Authorization: Bearer <token>
-                         → get_current_user() decodes JWT → returns User
-"""
-
-import os
-import base64
+﻿import base64
 import hashlib
 import hmac
+import os
 import secrets
-from datetime import datetime, timedelta
-from jose import JWTError, jwt
+from datetime import datetime, timedelta, timezone
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from .database import get_db
+
 from . import models
+from .database import get_db
 
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret")
-ALGORITHM  = os.getenv("ALGORITHM", "HS256")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 EXPIRE_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
-oauth2_scheme  = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_optional_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 PBKDF2_ITERATIONS = 260_000
 
 
-# ── Password helpers ────────────────────────────────────────────────────────
-
 def hash_password(plain: str) -> str:
-    """
-    PBKDF2-SHA256 password hash format:
-      pbkdf2_sha256$<iterations>$<salt_b64>$<digest_b64>
-    """
     salt = secrets.token_bytes(16)
     digest = hashlib.pbkdf2_hmac(
         "sha256",
@@ -52,7 +36,6 @@ def hash_password(plain: str) -> str:
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    # Backward compatible check for the new PBKDF2 format.
     if hashed.startswith("pbkdf2_sha256$"):
         try:
             _, iterations, salt_b64, digest_b64 = hashed.split("$", 3)
@@ -68,10 +51,10 @@ def verify_password(plain: str, hashed: str) -> bool:
         except Exception:
             return False
 
-    # Backward compatibility path for existing bcrypt hashes when available.
     if hashed.startswith("$2"):
         try:
-            from passlib.context import CryptContext  # Optional dependency
+            from passlib.context import CryptContext
+
             legacy_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
             return legacy_context.verify(plain, hashed)
         except Exception:
@@ -80,11 +63,9 @@ def verify_password(plain: str, hashed: str) -> bool:
     return False
 
 
-# ── JWT helpers ─────────────────────────────────────────────────────────────
-
 def create_access_token(data: dict) -> str:
     payload = data.copy()
-    payload["exp"] = datetime.utcnow() + timedelta(minutes=EXPIRE_MIN)
+    payload["exp"] = datetime.now(timezone.utc) + timedelta(minutes=EXPIRE_MIN)
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -99,17 +80,9 @@ def decode_token(token: str) -> dict:
         )
 
 
-# ── FastAPI dependency ───────────────────────────────────────────────────────
-
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ) -> models.User:
-    """
-    Inject as a dependency into any protected route:
-        current_user: User = Depends(get_current_user)
-    Returns the authenticated User ORM object.
-    """
     payload = decode_token(token)
     user_id = payload.get("sub")
     if not user_id:
@@ -120,11 +93,24 @@ def get_current_user(
     return user
 
 
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_optional_scheme), db: Session = Depends(get_db)
+) -> models.User | None:
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+    except HTTPException:
+        return None
+
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
+
 def require_admin(current_user: models.User = Depends(get_current_user)) -> models.User:
-    """
-    Dependency that requires the user to have role='admin'.
-    Use for analytics dashboard and admin-only endpoints.
-    """
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user

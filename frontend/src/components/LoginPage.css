@@ -1,13 +1,14 @@
-.login-page {
-  width: 1440px;
-  min-height: 2334px;
+﻿.login-page {
+  width: min(1440px, 100%);
+  min-height: 100vh;
   margin: 0 auto;
-  background: var(--accent-color);
+  background: #1a1821;
 }
 
 .login-page-content {
-  width: 1111px;
-  margin: 67px auto 0;
+  width: min(1111px, 92%);
+  margin: 44px auto 0;
   display: flex;
   justify-content: center;
+  padding-bottom: 40px;
 }

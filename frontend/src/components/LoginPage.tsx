@@ -1,4 +1,4 @@
-import HomeNavBar from "./HomeNavBar";
+﻿import HomeNavBar from "./HomeNavBar";
 import LoginComponent from "./LoginComponent";
 import "./LoginPage.css";
 
@@ -9,10 +9,16 @@ type LoginPageProps = {
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
-  labelText: string;
-  secondaryLabelText?: string;
-  onCreateAccount: () => void;
-  onNext: () => void;
+  rememberedEmail?: string;
+  onAuthenticate: (payload: {
+    mode: "sign-in" | "create";
+    email: string;
+    password: string;
+    organization?: string;
+    rememberEmail: boolean;
+  }) => void | Promise<void>;
+  isLoading?: boolean;
+  errorMessage?: string | null;
 };
 
 export default function LoginPage({
@@ -22,10 +28,10 @@ export default function LoginPage({
   onNavigateAnalytics,
   onNavigateAllTrials,
   onSelectExperience,
-  labelText,
-  secondaryLabelText,
-  onCreateAccount,
-  onNext,
+  rememberedEmail,
+  onAuthenticate,
+  isLoading,
+  errorMessage,
 }: LoginPageProps) {
   return (
     <main className="login-page">
@@ -40,10 +46,11 @@ export default function LoginPage({
 
       <section className="login-page-content" aria-label="Log in page">
         <LoginComponent
-          labelText={labelText}
-          secondaryLabelText={secondaryLabelText}
-          onCreateAccount={onCreateAccount}
-          onNext={onNext}
+          role="user"
+          rememberedEmail={rememberedEmail}
+          onAuthenticate={onAuthenticate}
+          isLoading={isLoading}
+          errorMessage={errorMessage}
         />
       </section>
     </main>

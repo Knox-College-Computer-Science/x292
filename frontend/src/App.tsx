@@ -1,44 +1,20 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
+import { loginUser, registerUser, type UserProfile } from "./api";
+import AllTrialsPage from "./components/AllTrialsPage";
+import BlankPage from "./components/BlankPage";
+import ClinicAllTrialsPage from "./components/ClinicAllTrialsPage";
+import ClinicAnalyticsPage from "./components/ClinicAnalyticsPage";
+import ClinicLoginPage from "./components/ClinicLoginPage";
+import ClinicMoreAnalyticsPage from "./components/ClinicMoreAnalyticsPage";
+import ClinicProfileSetupPage from "./components/ClinicProfileSetupPage";
+import ClinicTrialCardPage from "./components/ClinicTrialCardPage";
 import HomePage from "./components/HomePage";
 import LoginPage from "./components/LoginPage";
-import ClinicLoginPage from "./components/ClinicLoginPage";
 import ProfileSetupPage from "./components/ProfileSetupPage";
-import ClinicProfileSetupPage from "./components/ClinicProfileSetupPage";
-import ClinicAllTrialsPage from "./components/ClinicAllTrialsPage";
-import ClinicTrialCardPage from "./components/ClinicTrialCardPage";
-import ClinicAnalyticsPage from "./components/ClinicAnalyticsPage";
-import ClinicMoreAnalyticsPage from "./components/ClinicMoreAnalyticsPage";
-import BlankPage from "./components/BlankPage";
-import TrialPage from "./components/TrialPage";
 import TrialMoreDetailsPage from "./components/TrialMoreDetailsPage";
-import AllTrialsPage from "./components/AllTrialsPage";
+import TrialPage from "./components/TrialPage";
 import UserAnalyticsPage from "./components/UserAnalyticsPage";
 import "./components/HomeButtons.css";
-
-/*
-  Project progress so far:
-
-  1. The FastAPI backend is running successfully at http://127.0.0.1:8000.
-  2. The backend /health route was tested and returns {"status":"ok"}.
-  3. The backend uses SQLAlchemy for database models and queries.
-  4. Backend routes for trials, users, and clinics are mounted in main.py.
-  5. The old todo API code in frontend/src/api.ts was replaced with real clinical trial API functions.
-  6. AllTrialsPage now calls listTrials("diabetes") to fetch real trial data from the backend.
-  7. AllTrialsPage now handles loading, error, and empty states.
-  8. Real trial titles from the backend are now displayed on the frontend.
-  9. The More Info button now sends the clicked trial's id to App.tsx.
-  10. App.tsx stores the clicked trial id in selectedTrialId.
-  11. This was tested in the browser console and confirmed with:
-      Selected trial: 3e5ac6af-1a7b-4a90-a93e-fe766b424747
-
-  Current status:
-  The frontend can load real trials from the backend, and App.tsx knows which
-  trial was clicked when the user selects More Info.
-
-  Next step:
-  Pass selectedTrialId from App.tsx into TrialMoreDetailsPage, then use it to
-  fetch the full trial details with GET /trials/{trialId}.
-*/
 
 type AppView =
   | "home"
@@ -53,6 +29,39 @@ type AppView =
   | "all-trials";
 type ExperienceMode = "clinics" | "participants";
 
+type SessionState = {
+  token: string;
+  userId: string;
+  email: string;
+  role: "user" | "clinic" | "admin";
+  profileCompleted: boolean;
+};
+
+const SESSION_STORAGE_KEY = "atlas_session";
+const REMEMBERED_EMAIL_KEY = "atlas_remembered_email";
+
+function readStoredSession(): SessionState | null {
+  const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw) as SessionState;
+  } catch {
+    return null;
+  }
+}
+
+function persistSession(session: SessionState | null) {
+  if (!session) {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    return;
+  }
+
+  window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+}
+
 export default function App() {
   const [view, setView] = useState<AppView>("home");
   const [selectedTrialId, setSelectedTrialId] = useState<string | null>(null);
@@ -60,10 +69,82 @@ export default function App() {
   const [clinicMoreBackView, setClinicMoreBackView] = useState<
     "all-trials" | "clinic-trial-card"
   >("all-trials");
+  const [session, setSession] = useState<SessionState | null>(() =>
+    readStoredSession()
+  );
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const rememberedEmail = useMemo(
+    () => window.localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? undefined,
+    []
+  );
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view, experience]);
+
+  async function handleAuthenticate(payload: {
+    mode: "sign-in" | "create";
+    email: string;
+    password: string;
+    rememberEmail: boolean;
+  }) {
+    try {
+      setAuthLoading(true);
+      setAuthError(null);
+
+      const role = experience === "clinics" ? "clinic" : "user";
+      const response =
+        payload.mode === "create"
+          ? await registerUser(payload.email, payload.password, role)
+          : await loginUser(payload.email, payload.password);
+
+      const nextSession: SessionState = {
+        token: response.access_token,
+        userId: response.user_id,
+        email: payload.email,
+        role: response.role,
+        profileCompleted: response.profile_completed,
+      };
+
+      setSession(nextSession);
+      persistSession(nextSession);
+
+      if (payload.rememberEmail) {
+        window.localStorage.setItem(REMEMBERED_EMAIL_KEY, payload.email);
+      } else {
+        window.localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+      }
+
+      if (payload.mode === "create" || !response.profile_completed) {
+        setView("profile");
+      } else {
+        setView("all-trials");
+      }
+    } catch (error) {
+      setAuthError(
+        error instanceof Error ? error.message : "Could not authenticate."
+      );
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  function handleProfileSaved(profile: UserProfile) {
+    const current = session;
+    if (!current) {
+      return;
+    }
+
+    const next = {
+      ...current,
+      profileCompleted: profile.profile_completed,
+    };
+
+    setSession(next);
+    persistSession(next);
+  }
 
   const pageLabel = `[${experience === "clinics" ? "clinic" : "participant"} - ${view}]`;
 
@@ -90,9 +171,10 @@ export default function App() {
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
-        labelText="Sign in"
-        onCreateAccount={() => setView("profile")}
-        onNext={() => setView("profile")}
+        rememberedEmail={rememberedEmail}
+        onAuthenticate={handleAuthenticate}
+        isLoading={authLoading}
+        errorMessage={authError}
       />
     );
   }
@@ -106,8 +188,10 @@ export default function App() {
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
-        onCreateAccount={() => setView("profile")}
-        onNext={() => setView("profile")}
+        rememberedEmail={rememberedEmail}
+        onAuthenticate={handleAuthenticate}
+        isLoading={authLoading}
+        errorMessage={authError}
       />
     );
   }
@@ -115,12 +199,15 @@ export default function App() {
   if (view === "profile" && experience === "participants") {
     return (
       <ProfileSetupPage
+        authToken={session?.token ?? null}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
         onNavigateProfile={() => setView("profile")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("trials")}
+        onNavigateLogin={() => setView("login")}
         onSelectExperience={setExperience}
+        onProfileSaved={handleProfileSaved}
       />
     );
   }
@@ -141,23 +228,26 @@ export default function App() {
   if (view === "trials" && experience === "participants") {
     return (
       <TrialPage
+        authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
         onNavigateProfile={() => setView("profile")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
-        onNavigateMoreDetails={() => setView("trial-more-details")}
+        onNavigateMoreDetails={(trialId) => {
+          setSelectedTrialId(trialId);
+          setView("trial-more-details");
+        }}
         onSelectExperience={setExperience}
       />
     );
   }
 
   if (view === "trial-more-details" && experience === "participants") {
-    
-
     return (
       <TrialMoreDetailsPage
         trialId={selectedTrialId}
+        authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
         onNavigateProfile={() => setView("profile")}
@@ -171,6 +261,7 @@ export default function App() {
   if (view === "all-trials" && experience === "participants") {
     return (
       <AllTrialsPage
+        authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
         onNavigateProfile={() => setView("profile")}
@@ -221,12 +312,17 @@ export default function App() {
   if (view === "analytics" && experience === "participants") {
     return (
       <UserAnalyticsPage
+        authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
         onNavigateProfile={() => setView("profile")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateMoreDetails={() => setView("analytics-result-uses")}
+        onNavigateHistoryTrial={(trialId) => {
+          setSelectedTrialId(trialId);
+          setView("trial-more-details");
+        }}
         onSelectExperience={setExperience}
       />
     );

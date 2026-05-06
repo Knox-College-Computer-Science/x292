@@ -1,3 +1,5 @@
+﻿import { useEffect, useState } from "react";
+import { getTrialAnalyticsStats, type TrialAnalyticsStats } from "../api";
 import HomeNavBar from "./HomeNavBar";
 import Arrows from "./Arrows";
 import ClinicAnalyticsCard from "./ClinicAnalyticsCard";
@@ -22,6 +24,25 @@ export default function ClinicAnalyticsPage({
   onNavigateMoreDetails,
   onSelectExperience,
 }: ClinicAnalyticsPageProps) {
+  const [stats, setStats] = useState<TrialAnalyticsStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getTrialAnalyticsStats()
+      .then((data) => {
+        setStats(data);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error("Failed to load clinic analytics stats:", err);
+        setError("Could not load analytics.");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
   return (
     <main className="clinic-analytics-page">
       <HomeNavBar
@@ -36,7 +57,12 @@ export default function ClinicAnalyticsPage({
         className="clinic-analytics-page-content"
         aria-label="Clinic analytics"
       >
-        <ClinicAnalyticsCard onNavigateMoreDetails={onNavigateMoreDetails} />
+        <ClinicAnalyticsCard
+          stats={stats}
+          isLoading={isLoading}
+          error={error}
+          onNavigateMoreDetails={onNavigateMoreDetails}
+        />
         <div className="clinic-analytics-page-arrows">
           <Arrows />
         </div>

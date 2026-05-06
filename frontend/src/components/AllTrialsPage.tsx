@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
-import { listTrials, type Trial } from "../api";
+﻿import { useEffect, useMemo, useState } from "react";
+import { getMySavedTrials, listTrials, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
 import "./AllTrialsPage.css";
 
-
-
 type AllTrialsPageProps = {
+  authToken?: string;
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
@@ -16,20 +15,17 @@ type AllTrialsPageProps = {
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-// this is the temp default search item
 const DEFAULT_CONDITION = "diabetes";
 
-// This combines separate backend fields into one readable line for the Status column.
 function formatTrialMeta(trial: Trial) {
   const status = trial.recruitment_status || "Status not listed";
-  const date = trial.start_date ? `Starts ${trial.start_date}` : "Date not listed";
+  const phase = trial.study_phase ?? "Phase not listed";
   const location = trial.location || "Location not listed";
-
-  return `${status} - ${date} - ${location}`;
-  // Return one combined string for the frontend to display.
+  return `${status} - ${phase} - ${location}`;
 }
 
 export default function AllTrialsPage({
+  authToken,
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
@@ -40,55 +36,69 @@ export default function AllTrialsPage({
   onSelectExperience,
 }: AllTrialsPageProps) {
   const [trials, setTrials] = useState<Trial[]>([]);
-  // trials stores the list returned by the backend; setTrials updates that list.
-
+  const [savedTrials, setSavedTrials] = useState<Trial[]>([]);
   const [loading, setLoading] = useState(true);
-  // trials stores the list returned by the backend; setTrials updates that list.
-
   const [error, setError] = useState<string | null>(null);
-  // error stores an error message if the backend request fails.
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
 
+  const [condition, setCondition] = useState(DEFAULT_CONDITION);
+  const [location, setLocation] = useState("");
+  const [status, setStatus] = useState("Recruiting");
+  const [phase, setPhase] = useState("");
+  const [participation, setParticipation] = useState("Either");
+  const [requiresCompensation, setRequiresCompensation] = useState(false);
 
+  async function loadTrials() {
+    try {
+      setLoading(true);
+      setError(null);
 
+      const normalizedParticipation =
+        participation === "Either" ? undefined : participation;
 
-  // Run this code once when the All Trials page first opens.
+      const [trialData, userSaved] = await Promise.all([
+        listTrials(
+          {
+            condition: condition.trim() || undefined,
+            location: location.trim() || undefined,
+            status: status.trim() || undefined,
+            phase: phase.trim() || undefined,
+            participation: normalizedParticipation,
+            requiresCompensation,
+          },
+          authToken
+        ),
+        authToken ? getMySavedTrials(authToken) : Promise.resolve([]),
+      ]);
+
+      setTrials(trialData);
+      setSavedTrials(userSaved);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not load trials. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    let ignoreResult = false;
-    // Prevents state updates if the user leaves the page before the request finishes.
+    void loadTrials();
+  }, [authToken]);
 
-
-    async function loadTrials() {
-      // Async function because backend requests take time.
-      try {
-        setLoading(true);
-        setError(null);
-        const trialData = await listTrials(DEFAULT_CONDITION);
-        // Call the backend through api.ts and wait for the trial data.
-
-        if (!ignoreResult) {
-          // Save the backend response into React state so the page can display it.
-          setTrials(trialData);
-        }
-      } catch (err) {
-        if (!ignoreResult) {
-          setError(err instanceof Error ? err.message : "Could not load trials");
-        }
-      } finally {
-        if (!ignoreResult) {
-          setLoading(false);
-        }
-      }
+  const activeTrials = useMemo(() => {
+    if (!showSavedOnly) {
+      return trials;
     }
 
-    loadTrials();
-    //actually starts loading trials
-    return () => {
-      ignoreResult = true;
-    };
-  }, []);
+    const savedIds = new Set(savedTrials.map((trial) => trial.id));
+    return trials.filter((trial) => savedIds.has(trial.id));
+  }, [showSavedOnly, trials, savedTrials]);
 
-  const upNextTrials = trials.slice(0, 1);
-  const statusTrials = trials.slice(0, 7);
+  const upNextTrials = activeTrials.slice(0, 2);
+  const statusTrials = activeTrials.slice(0, 8);
 
   return (
     <main className="all-trials-page">
@@ -102,7 +112,85 @@ export default function AllTrialsPage({
       />
 
       <section className="all-trials-content" aria-label="All trials">
-        {/* Up Next Box */}
+        <form
+          className="all-trials-filters"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void loadTrials();
+          }}
+        >
+          <label>
+            Condition
+            <input
+              value={condition}
+              onChange={(event) => setCondition(event.target.value)}
+              placeholder="e.g. diabetes"
+            />
+          </label>
+
+          <label>
+            Location
+            <input
+              value={location}
+              onChange={(event) => setLocation(event.target.value)}
+              placeholder="City, State"
+            />
+          </label>
+
+          <label>
+            Status
+            <select value={status} onChange={(event) => setStatus(event.target.value)}>
+              <option value="Recruiting">Recruiting</option>
+              <option value="Not yet recruiting">Not yet recruiting</option>
+              <option value="">Any</option>
+            </select>
+          </label>
+
+          <label>
+            Study Phase
+            <select value={phase} onChange={(event) => setPhase(event.target.value)}>
+              <option value="">Any</option>
+              <option value="Phase 1">Phase 1</option>
+              <option value="Phase 2">Phase 2</option>
+              <option value="Phase 3">Phase 3</option>
+              <option value="Phase 4">Phase 4</option>
+            </select>
+          </label>
+
+          <label>
+            Participation
+            <select
+              value={participation}
+              onChange={(event) => setParticipation(event.target.value)}
+            >
+              <option value="Either">Either</option>
+              <option value="Remote">Remote</option>
+              <option value="In-person">In-person</option>
+            </select>
+          </label>
+
+          <label className="all-trials-checkbox">
+            <input
+              type="checkbox"
+              checked={requiresCompensation}
+              onChange={(event) => setRequiresCompensation(event.target.checked)}
+            />
+            Compensation only
+          </label>
+
+          <button type="submit" className="atlas-button atlas-button-variant-3">
+            Apply filters
+          </button>
+
+          <button
+            type="button"
+            className="atlas-button atlas-button-variant-back"
+            onClick={() => setShowSavedOnly((value) => !value)}
+          >
+            {showSavedOnly ? "Show all" : "Saved only"}
+          </button>
+        </form>
+
         <div className="all-trials-up-next">
           <div className="all-trials-up-next-header">Up Next</div>
           {loading ? (
@@ -117,7 +205,14 @@ export default function AllTrialsPage({
                 key={trial.id}
                 className={`all-trials-up-next-entry all-trials-up-next-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
               >
-                <div className="all-trials-up-next-title">{trial.title}</div>
+                <div className="all-trials-up-next-title">
+                  {trial.title}
+                  {trial.match_reasons && trial.match_reasons.length > 0 ? (
+                    <span className="all-trials-match-reason">
+                      Match: {trial.match_reasons.join(", ")}
+                    </span>
+                  ) : null}
+                </div>
                 <div className="all-trials-up-next-date">
                   {trial.start_date ?? "Date not listed"}
                 </div>
@@ -126,7 +221,6 @@ export default function AllTrialsPage({
           )}
         </div>
 
-        {/* Status Box */}
         <div className="all-trials-status">
           <div className="all-trials-status-header">
             <div className="all-trials-status-trial-col">Trial</div>
@@ -137,7 +231,9 @@ export default function AllTrialsPage({
           ) : error ? (
             <div className="all-trials-message-row">{error}</div>
           ) : statusTrials.length === 0 ? (
-            <div className="all-trials-message-row">No trials found.</div>
+            <div className="all-trials-message-row">
+              No trials matched the selected filters. Try broadening your criteria.
+            </div>
           ) : (
             statusTrials.map((trial, index) => (
               <div
@@ -145,9 +241,7 @@ export default function AllTrialsPage({
                 className={`all-trials-status-entry all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
               >
                 <div className="all-trials-status-title">{trial.title}</div>
-                <div className="all-trials-status-date">
-                  {formatTrialMeta(trial)}
-                </div>
+                <div className="all-trials-status-date">{formatTrialMeta(trial)}</div>
                 <button
                   type="button"
                   className="atlas-button all-trials-status-more-details"
@@ -171,9 +265,9 @@ export default function AllTrialsPage({
           <button
             type="button"
             className="atlas-button atlas-button-variant-3 all-trials-find-trials"
-            onClick={onNavigateFindTrials}
+            onClick={() => void loadTrials()}
           >
-            Find Trials
+            Refresh Trials
           </button>
         </div>
       </section>

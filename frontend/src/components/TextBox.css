@@ -1,5 +1,5 @@
 .text-box {
-  width: 1193px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -7,20 +7,20 @@
 
 .text-box-heading {
   margin: 0;
-  font-size: 64px;
+  font-size: clamp(1.8rem, 1.2rem + 2vw, 3rem);
   font-weight: 700;
   line-height: 1.1;
   color: var(--main-color);
 }
 
 .text-box-body {
-  width: 1193px;
-  height: 209px;
+  width: 100%;
+  min-height: 209px;
   padding: 22px 26px;
   border-radius: 12px;
   background: rgba(129, 52, 5, 0.44);
   color: #ffffff;
   font-size: 20px;
   line-height: 1.6;
-  overflow: hidden;
+  white-space: pre-line;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { getTrial, passTrial, saveTrial, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
 import TextBox from "./TextBox";
@@ -6,6 +6,7 @@ import "./TrialMoreDetailsPage.css";
 
 type TrialMoreDetailsPageProps = {
   trialId: string | null;
+  authToken?: string | null;
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
@@ -14,10 +15,9 @@ type TrialMoreDetailsPageProps = {
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-const TEMP_USER_ID = "demo-user";
-
 export default function TrialMoreDetailsPage({
   trialId,
+  authToken,
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
@@ -47,7 +47,7 @@ export default function TrialMoreDetailsPage({
         setLoading(true);
         setError(null);
 
-        const trialData = await getTrial(trialId);
+        const trialData = await getTrial(trialId, authToken ?? undefined);
 
         if (!ignoreResult) {
           setTrial(trialData);
@@ -65,16 +65,21 @@ export default function TrialMoreDetailsPage({
       }
     }
 
-    loadTrialDetails();
+    void loadTrialDetails();
 
     return () => {
       ignoreResult = true;
     };
-  }, [trialId]);
+  }, [authToken, trialId]);
 
   async function handleTrialAction(action: "save" | "pass") {
     if (!trialId) {
       setActionMessage("No trial selected.");
+      return;
+    }
+
+    if (!authToken) {
+      setActionMessage("Please sign in to save or pass trials.");
       return;
     }
 
@@ -83,11 +88,11 @@ export default function TrialMoreDetailsPage({
       setActionMessage(null);
 
       if (action === "save") {
-        await saveTrial(trialId, TEMP_USER_ID);
-        setActionMessage("Trial saved.");
+        await saveTrial(trialId, authToken);
+        setActionMessage("Trial saved to your account.");
       } else {
-        await passTrial(trialId, TEMP_USER_ID);
-        setActionMessage("Trial passed.");
+        await passTrial(trialId, authToken);
+        setActionMessage("Trial marked as passed.");
       }
     } catch (err) {
       setActionMessage(
@@ -125,26 +130,33 @@ export default function TrialMoreDetailsPage({
         ) : (
           <>
             <TextBox
-              heading="About the Organization"
-              body={trial.sponsor ?? "Sponsor not listed."}
-            />
-
-            <TextBox
-              heading={trial.title}
+              heading="Study Summary"
               body={
                 trial.study_description ??
-                trial.eligibility_summary ??
-                "Description not listed."
+                "Description not listed by ClinicalTrials.gov."
               }
             />
 
             <TextBox
-              heading="Before you arrive"
-              body={`Location: ${trial.location}. Duration: ${
-                trial.duration ?? "Not listed"
-              }. Visit frequency: ${
-                trial.visit_frequency ?? "Not listed"
-              }. Compensation: ${trial.compensation ?? "Not listed"}.`}
+              heading="Eligibility + Timeline"
+              body={`Eligibility: ${
+                trial.eligibility_summary ?? "Not provided"
+              }\n\nStart: ${trial.start_date ?? "Not listed"}\nEnd: ${
+                trial.end_date ?? "Not listed"
+              }\nPhase: ${trial.study_phase ?? "Not listed"}\nRecruitment: ${
+                trial.recruitment_status
+              }`}
+            />
+
+            <TextBox
+              heading="Location, Sponsor, Contact"
+              body={`Location: ${trial.location}.\nSponsor: ${
+                trial.sponsor ?? "Not listed"
+              }.\nCompensation: ${
+                trial.compensation ?? "Compensation information is not available."
+              }.\nRemote eligible: ${trial.remote_eligible ? "Yes" : "No"}.\nContact/Application: ${
+                trial.contact_link ?? "Not listed"
+              }`}
             />
           </>
         )}
@@ -153,7 +165,7 @@ export default function TrialMoreDetailsPage({
           <button
             type="button"
             className="atlas-button atlas-button-variant-3"
-            onClick={() => handleTrialAction("save")}
+            onClick={() => void handleTrialAction("save")}
             disabled={actionLoading !== null}
           >
             {actionLoading === "save" ? "Saving..." : "Save"}
@@ -162,7 +174,7 @@ export default function TrialMoreDetailsPage({
           <button
             type="button"
             className="atlas-button atlas-button-variant-back"
-            onClick={() => handleTrialAction("pass")}
+            onClick={() => void handleTrialAction("pass")}
             disabled={actionLoading !== null}
           >
             {actionLoading === "pass" ? "Passing..." : "Pass"}
@@ -175,17 +187,9 @@ export default function TrialMoreDetailsPage({
           >
             Back
           </button>
-
-          <button
-            type="button"
-            className="atlas-button atlas-button-variant-3 trial-more-details-all-trials"
-            onClick={onNavigateAllTrials}
-          >
-            All Trials
-          </button>
         </div>
 
-        {actionMessage ? <p>{actionMessage}</p> : null}
+        {actionMessage ? <p className="trial-action-message">{actionMessage}</p> : null}
       </section>
     </main>
   );

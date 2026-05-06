@@ -1,13 +1,14 @@
 .user-analytics-page {
-  width: 1440px;
-  min-height: 2334px;
+  width: min(1440px, 100%);
+  min-height: 100vh;
   margin: 0 auto;
   background: var(--accent-color);
 }
 
 .user-analytics-page-content {
-  width: 1111px;
-  margin: 67px auto 0;
+  width: min(1111px, 94%);
+  margin: 34px auto 0;
+  padding-bottom: 28px;
 }
 
 .user-analytics-page-arrows {

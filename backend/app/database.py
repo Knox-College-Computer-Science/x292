@@ -1,10 +1,12 @@
 from pathlib import Path
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATABASE_URL = f"sqlite:///{BASE_DIR / 'app.db'}"
+DATABASE_FILENAME = os.getenv("DATABASE_FILENAME", "app_v2.db")
+DATABASE_URL = f"sqlite:///{BASE_DIR / DATABASE_FILENAME}"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

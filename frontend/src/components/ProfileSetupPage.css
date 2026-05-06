@@ -1,25 +1,51 @@
-.profile-page {
-  width: 1440px;
-  min-height: 2334px;
+﻿.profile-page {
+  width: min(1440px, 100%);
+  min-height: 100vh;
   margin: 0 auto;
   background: var(--accent-color);
 }
 
 .profile-page-content {
-  width: 1111px;
-  margin: 67px auto 0;
+  width: min(1111px, 94%);
+  margin: 46px auto 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-bottom: 42px;
 }
 
 .profile-page-intro {
-  margin: 0 0 67px;
-  font-size: 48px;
+  margin: 0 0 28px;
+  font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.4rem);
   font-weight: 700;
   color: var(--main-color);
+  text-align: center;
 }
 
 .profile-submit-button {
   margin-top: 17px;
+}
+
+.profile-auth-warning {
+  width: min(640px, 100%);
+  border-radius: 12px;
+  background: rgba(129, 52, 5, 0.14);
+  padding: 24px;
+  text-align: center;
+  color: var(--main-color);
+}
+
+.profile-message {
+  width: 100%;
+  margin: 14px 0 0;
+  color: var(--main-color);
+  font-weight: 700;
+}
+
+.profile-message-error {
+  color: #8b1f00;
+}
+
+.profile-message-success {
+  color: #1f5f1b;
 }

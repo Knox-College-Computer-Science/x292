@@ -1,10 +1,10 @@
-.profile-card {
-  width: 1111px;
+﻿.profile-card {
+  width: min(1111px, 100%);
   min-height: 673px;
-  padding: 48px;
+  padding: 38px;
   border-radius: 12px;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    linear-gradient(rgba(129, 52, 5, 0.72), rgba(129, 52, 5, 0.72)),
     var(--accent-color);
   color: #ffffff;
 }
@@ -12,33 +12,77 @@
 .profile-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px 32px;
+  gap: 20px 26px;
 }
 
 .profile-form label {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-size: 20px;
+  gap: 8px;
+  font-size: 18px;
   font-weight: 700;
 }
 
 .profile-form input,
-.profile-form textarea {
+.profile-form textarea,
+.profile-form select {
   width: 100%;
   border: 1px solid var(--accent-color);
   border-radius: 10px;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.14);
   color: #ffffff;
-  padding: 12px 14px;
+  padding: 10px 12px;
   font: inherit;
+}
+
+.profile-form select option {
+  color: #111;
 }
 
 .profile-form textarea {
   resize: vertical;
-  min-height: 140px;
+  min-height: 96px;
 }
 
 .profile-form-wide {
   grid-column: 1 / -1;
+}
+
+.profile-checkbox-row {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.privacy-card {
+  padding: 14px;
+  border: 1px solid rgba(248, 221, 164, 0.35);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.privacy-card h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.privacy-card p {
+  margin: 10px 0 14px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+@media (max-width: 920px) {
+  .profile-card {
+    padding: 20px;
+  }
+
+  .profile-form {
+    grid-template-columns: 1fr;
+  }
 }

@@ -1,30 +1,23 @@
-""" 
-
-Pareto Front logic
-
-A trial should stay on the Pareto front if no other trial beats it in all these areas:
-
-condition relevance
-location closeness
-recruiting state
-remote convenience
-"""
-
+﻿from typing import Dict, List, Tuple
 
 from sqlalchemy.orm import Session
-from .. import models, crud
-from typing import List, Tuple, Dict
+
+from .. import crud, models
 
 
 def _condition_match(profile_condition: str, trial_condition: str) -> int:
     if not profile_condition or not trial_condition:
         return 0
 
-    return 1 if any(
-        cond.strip().lower() in trial_condition.lower()
-        for cond in profile_condition.split(",")
-        if cond.strip()
-    ) else 0
+    return (
+        1
+        if any(
+            cond.strip().lower() in trial_condition.lower()
+            for cond in profile_condition.split(",")
+            if cond.strip()
+        )
+        else 0
+    )
 
 
 def _location_match(profile_location: str, trial_location: str) -> int:
@@ -51,21 +44,42 @@ def _remote_match(participation_preference: str, remote_eligible: bool) -> int:
     return 0
 
 
+def _age_compatible(profile: models.UserProfile, trial: models.Trial) -> bool:
+    preferred_min = profile.age_range_min
+    preferred_max = profile.age_range_max
+
+    if preferred_min is None and preferred_max is None:
+        return True
+
+    trial_min = trial.eligibility_age_min
+    trial_max = trial.eligibility_age_max
+
+    if preferred_min is not None and trial_max is not None and trial_max < preferred_min:
+        return False
+    if preferred_max is not None and trial_min is not None and trial_min > preferred_max:
+        return False
+    return True
+
+
 def _build_metrics(profile: models.UserProfile, trial: models.Trial) -> Dict[str, int]:
+    enabled = profile.matching_fields_enabled or {}
+    use_condition = enabled.get("health_conditions", True)
+    use_location = enabled.get("location", True)
+    use_participation = enabled.get("participation_preference", True)
+
     return {
-        "condition": _condition_match(profile.health_conditions, trial.condition),
-        "location": _location_match(profile.location, trial.location),
+        "condition": _condition_match(profile.health_conditions, trial.condition)
+        if use_condition
+        else 0,
+        "location": _location_match(profile.location, trial.location) if use_location else 0,
         "recruiting": _recruiting_match(trial.recruitment_status),
-        "remote": _remote_match(profile.participation_preference, trial.remote_eligible),
+        "remote": _remote_match(profile.participation_preference, trial.remote_eligible)
+        if use_participation
+        else 0,
     }
 
 
 def _dominates(a: Dict[str, int], b: Dict[str, int]) -> bool:
-    """
-    Trial A dominates trial B if:
-    - A is at least as good as B in every criterion
-    - A is strictly better than B in at least one criterion
-    """
     return all(a[key] >= b[key] for key in a) and any(a[key] > b[key] for key in a)
 
 
@@ -117,12 +131,8 @@ def _score_from_metrics(metrics: Dict[str, int]) -> Tuple[float, List[str]]:
 def match_trials(
     db: Session,
     user_id: str,
-    trials: List[models.Trial]
+    trials: List[models.Trial],
 ) -> List[Tuple[models.Trial, float, List[str]]]:
-    """
-    Match trials using a Pareto-front filter first, then weighted scoring.
-    Returns list of (trial, score, match_reasons)
-    """
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user or not user.profile:
         raise Exception("User profile not found")
@@ -135,9 +145,21 @@ def match_trials(
         if interaction and interaction.action in ["save", "pass"]:
             continue
 
-        metrics = _build_metrics(profile, trial)
+        if not _age_compatible(profile, trial):
+            continue
 
-        # Only keep trials that match at least one useful criterion
+        if profile.preferred_recruitment_status and profile.preferred_recruitment_status.lower() != "any":
+            if trial.recruitment_status.lower() != profile.preferred_recruitment_status.lower():
+                continue
+
+        if profile.preferred_study_phase and trial.study_phase:
+            if profile.preferred_study_phase.lower() not in trial.study_phase.lower():
+                continue
+
+        if profile.compensation_required and not trial.compensation:
+            continue
+
+        metrics = _build_metrics(profile, trial)
         if sum(metrics.values()) > 0:
             candidate_trials.append((trial, metrics))
 
@@ -152,15 +174,7 @@ def match_trials(
     return matched_trials
 
 
-def get_matched_trials(
-    db: Session,
-    user_id: str,
-    condition: str
-) -> List[models.Trial]:
-    """
-    Get matched trials for a user.
-    Convenience function that combines search + matching.
-    """
+def get_matched_trials(db: Session, user_id: str, condition: str) -> List[models.Trial]:
     trials = crud.search_trials(db, condition=condition, limit=100)
     scored = match_trials(db, user_id, trials)
-    return [trial for trial, score, reasons in scored]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+    return [trial for trial, _score, _reasons in scored]
