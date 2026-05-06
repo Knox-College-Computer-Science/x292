@@ -9,4 +9,4 @@ print("Number of studies fetched:", len(studies))
 
 for study in studies:
     cleaned = clean_trial(study)
-    print(cleaned)
+    print(ascii(cleaned))
