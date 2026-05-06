@@ -2,9 +2,9 @@
   width: min(1111px, 100%);
   border-radius: 20px;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    linear-gradient(var(--main-overlay), var(--main-overlay)),
     var(--accent-color);
-  color: #ffffff;
+  color: var(--on-brand);
   padding: 24px;
 }
 
@@ -16,17 +16,20 @@
 
 .user-analytics-card-grid {
   margin-top: 16px;
+  margin-left: 2.5%;
+  margin-right: 2.5%;
   display: grid;
   grid-template-columns: minmax(0, 55%) minmax(0, 1fr);
   gap: 20px;
+  align-items: flex-end;
 }
 
 .user-analytics-visual-box {
   min-height: 380px;
   border-radius: 10px;
-  background: rgba(248, 221, 164, 0.26);
+  background: var(--participant-overlay);
   padding: 14px;
-  color: #fff;
+  color: var(--on-brand);
 }
 
 .user-analytics-visual-box h3 {
@@ -36,6 +39,25 @@
 
 .history-empty {
   margin: 0;
+}
+
+.user-analytics-history-skeleton {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.user-analytics-history-skeleton-line {
+  height: 18px;
+}
+
+.user-analytics-history-skeleton-line-wide {
+  width: 84%;
+}
+
+.user-analytics-history-skeleton-line-short {
+  width: 56%;
 }
 
 .history-list {
@@ -54,7 +76,7 @@
   align-items: center;
   padding: 10px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(255, 253, 249, 0.12);
 }
 
 .history-list strong {
@@ -67,7 +89,7 @@
   display: block;
   margin-top: 4px;
   font-size: 0.85rem;
-  color: #ffecc8;
+  color: var(--highlight-color);
 }
 
 .history-open-btn {
@@ -80,6 +102,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  justify-content: space-between;
 }
 
 .user-analytics-detail-row {
@@ -94,8 +117,30 @@
   overflow-wrap: anywhere;
 }
 
+.user-analytics-details-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-analytics-detail-skeleton-line {
+  height: 18px;
+  width: 78%;
+}
+
+.user-analytics-detail-skeleton-line-wide {
+  width: 94%;
+}
+
+.user-analytics-detail-skeleton-line-short {
+  width: 62%;
+}
+
+.user-analytics-error-card {
+  margin-top: 2px;
+}
+
 .user-analytics-actions-row {
-  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
 }

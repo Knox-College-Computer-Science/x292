@@ -1,13 +1,15 @@
 ﻿.login-page {
-  width: min(1440px, 100%);
+  width: 100%;
   min-height: 100vh;
   margin: 0 auto;
-  background: #1a1821;
+  background:
+    radial-gradient(circle at top, rgba(127, 165, 141, 0.18), transparent 42%),
+    linear-gradient(180deg, var(--surface-0), var(--surface-2));
 }
 
 .login-page-content {
   width: min(1111px, 92%);
-  margin: 44px auto 0;
+  margin: 67px auto 0;
   display: flex;
   justify-content: center;
   padding-bottom: 40px;

@@ -53,13 +53,15 @@ export default function ProfileSetupPage({
   onProfileSaved,
 }: ProfileSetupPageProps) {
   const [values, setValues] = useState<ProfileFormValues>(DEFAULT_VALUES);
-  const [matchingFields, setMatchingFields] = useState<Record<string, boolean>>({
-    location: true,
-    health_conditions: true,
-    age_range: true,
-    participation_preference: true,
-    travel_willingness: true,
-  });
+  const [matchingFields, setMatchingFields] = useState<Record<string, boolean>>(
+    {
+      location: true,
+      health_conditions: true,
+      age_range: true,
+      participation_preference: true,
+      travel_willingness: true,
+    },
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,14 +98,17 @@ export default function ProfileSetupPage({
           health_conditions: profile.health_conditions ?? "",
           trial_interests: profile.trial_interests ?? "",
           age_range_min:
-            profile.age_range_min !== null && profile.age_range_min !== undefined
+            profile.age_range_min !== null &&
+            profile.age_range_min !== undefined
               ? String(profile.age_range_min)
               : "",
           age_range_max:
-            profile.age_range_max !== null && profile.age_range_max !== undefined
+            profile.age_range_max !== null &&
+            profile.age_range_max !== undefined
               ? String(profile.age_range_max)
               : "",
-          participation_preference: profile.participation_preference ?? "Either",
+          participation_preference:
+            profile.participation_preference ?? "Either",
           travel_willingness: profile.travel_willingness ?? "Local only",
           max_distance_miles:
             profile.max_distance_miles !== null &&
@@ -126,11 +131,13 @@ export default function ProfileSetupPage({
             age_range: true,
             participation_preference: true,
             travel_willingness: true,
-          }
+          },
         );
       } catch (err) {
         if (!ignore) {
-          setError(err instanceof Error ? err.message : "Could not load profile.");
+          setError(
+            err instanceof Error ? err.message : "Could not load profile.",
+          );
         }
       } finally {
         if (!ignore) {
@@ -148,7 +155,10 @@ export default function ProfileSetupPage({
 
   const disabled = useMemo(() => isLoading || isSaving, [isLoading, isSaving]);
 
-  function handleFieldChange(field: keyof ProfileFormValues, value: string | boolean) {
+  function handleFieldChange(
+    field: keyof ProfileFormValues,
+    value: string | boolean,
+  ) {
     setValues((previous) => ({ ...previous, [field]: value }));
   }
 
@@ -175,8 +185,12 @@ export default function ProfileSetupPage({
         location: values.location.trim() || undefined,
         health_conditions: values.health_conditions.trim() || undefined,
         trial_interests: values.trial_interests.trim() || undefined,
-        age_range_min: values.age_range_min ? Number(values.age_range_min) : null,
-        age_range_max: values.age_range_max ? Number(values.age_range_max) : null,
+        age_range_min: values.age_range_min
+          ? Number(values.age_range_min)
+          : null,
+        age_range_max: values.age_range_max
+          ? Number(values.age_range_max)
+          : null,
         participation_preference: values.participation_preference,
         travel_willingness: values.travel_willingness,
         max_distance_miles: values.max_distance_miles
@@ -194,7 +208,9 @@ export default function ProfileSetupPage({
       await updateMyPrivacySettings(tokenValue, matchingFields);
 
       onProfileSaved(updatedProfile);
-      setSuccessMessage("Preferences saved. Personalized trial matching is ready.");
+      setSuccessMessage(
+        "Preferences saved. Personalized trial matching is ready.",
+      );
       onNavigateAllTrials();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save profile.");
@@ -232,7 +248,13 @@ export default function ProfileSetupPage({
         ) : (
           <>
             {isLoading ? (
-              <p className="profile-message">Loading your profile...</p>
+              <div className="profile-card-skeleton" aria-hidden="true">
+                <div className="skeleton skeleton-line profile-card-skeleton-line profile-card-skeleton-line-wide" />
+                <div className="skeleton skeleton-line profile-card-skeleton-line" />
+                <div className="skeleton skeleton-line profile-card-skeleton-line" />
+                <div className="skeleton skeleton-line profile-card-skeleton-line profile-card-skeleton-line-short" />
+                <div className="skeleton skeleton-block profile-card-skeleton-block" />
+              </div>
             ) : (
               <ProfileSetupCard
                 values={values}
@@ -242,19 +264,30 @@ export default function ProfileSetupPage({
               />
             )}
 
-            {error ? <p className="profile-message profile-message-error">{error}</p> : null}
+            {error ? (
+              <p className="profile-message profile-message-error">{error}</p>
+            ) : null}
             {successMessage ? (
-              <p className="profile-message profile-message-success">{successMessage}</p>
+              <p className="profile-message profile-message-success">
+                {successMessage}
+              </p>
             ) : null}
 
-            <button
-              type="button"
-              className="atlas-button atlas-button-variant-3 profile-submit-button"
-              onClick={handleSubmit}
-              disabled={disabled}
-            >
-              {isSaving ? "Saving..." : "Save Preferences"}
-            </button>
+            {isLoading ? (
+              <div
+                className="skeleton skeleton-block profile-submit-skeleton"
+                aria-hidden="true"
+              />
+            ) : (
+              <button
+                type="button"
+                className="atlas-button atlas-button-variant-3 profile-submit-button"
+                onClick={handleSubmit}
+                disabled={disabled}
+              >
+                {isSaving ? "Saving..." : "Save Preferences"}
+              </button>
+            )}
           </>
         )}
       </section>

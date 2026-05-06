@@ -4,9 +4,9 @@
   padding: 38px;
   border-radius: 12px;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.72), rgba(129, 52, 5, 0.72)),
+    linear-gradient(var(--main-overlay-strong), var(--main-overlay-strong)),
     var(--accent-color);
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 .profile-form {
@@ -27,16 +27,16 @@
 .profile-form textarea,
 .profile-form select {
   width: 100%;
-  border: 1px solid var(--accent-color);
+  border: 1px solid rgba(255, 253, 249, 0.3);
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.14);
-  color: #ffffff;
+  color: var(--on-brand);
   padding: 10px 12px;
   font: inherit;
 }
 
 .profile-form select option {
-  color: #111;
+  color: var(--text-strong);
 }
 
 .profile-form textarea {
@@ -61,7 +61,7 @@
 
 .privacy-card {
   padding: 14px;
-  border: 1px solid rgba(248, 221, 164, 0.35);
+  border: 1px solid rgba(255, 253, 249, 0.24);
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.18);
 }

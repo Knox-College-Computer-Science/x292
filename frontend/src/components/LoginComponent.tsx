@@ -51,22 +51,15 @@ export default function LoginComponent({
 
   return (
     <section className="login-component" aria-label={`${titleText} panel`}>
-      <div className="login-title-row">
-        <h2 className="login-title">{titleText}</h2>
-        {mode === "sign-in" ? (
-          <button
-            type="button"
-            className="login-switch-cta"
-            onClick={() => setMode("create")}
-          >
-            New here? Create Account
-          </button>
-        ) : null}
-      </div>
+      <h2 className="login-title">{titleText}</h2>
 
       <div className="login-logo-placeholder" aria-hidden="true" />
 
-      <form className="login-form" aria-label={`${titleText} form`} onSubmit={handleSubmit}>
+      <form
+        className="login-form"
+        aria-label={`${titleText} form`}
+        onSubmit={handleSubmit}
+      >
         <div className="login-field-group">
           <label className="login-field-label" htmlFor="login-email">
             Email
@@ -121,7 +114,9 @@ export default function LoginComponent({
           Remember email on this device
         </label>
 
-        {errorMessage ? <p className="login-error-message">{errorMessage}</p> : null}
+        {errorMessage ? (
+          <p className="login-error-message">{errorMessage}</p>
+        ) : null}
 
         <div className="login-actions">
           <button
@@ -140,7 +135,7 @@ export default function LoginComponent({
               ? "Please wait..."
               : mode === "sign-in"
                 ? "Sign In"
-                : "Create + Continue"}
+                : "Create"}
           </button>
         </div>
       </form>

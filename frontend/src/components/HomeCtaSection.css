@@ -1,11 +1,11 @@
 .help-section {
   position: relative;
   margin-top: 259px;
-  width: 1440px;
+  width: 100%;
   height: 1116px;
   overflow: hidden;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    linear-gradient(var(--main-overlay), var(--main-overlay)),
     var(--accent-color);
 }
 
@@ -18,7 +18,7 @@
   font-weight: 700;
   line-height: 128px;
   letter-spacing: 1px;
-  color: #000;
+  color: var(--text-strong);
 }
 
 .atlas-button.join-button {

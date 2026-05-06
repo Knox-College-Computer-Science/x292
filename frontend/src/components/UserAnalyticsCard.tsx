@@ -47,12 +47,20 @@ export default function UserAnalyticsCard({
       className="user-analytics-card"
       aria-label="User analytics details"
     >
-      <h2 className="user-analytics-card-title">Matcher Analytics + Swipe History</h2>
+      <h2 className="user-analytics-card-title">
+        Matcher Analytics + Swipe History
+      </h2>
 
       <div className="user-analytics-card-grid">
         <div className="user-analytics-visual-box">
           <h3>Swipe History</h3>
-          {history.length === 0 ? (
+          {isLoading ? (
+            <div className="user-analytics-history-skeleton" aria-hidden="true">
+              <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-wide" />
+              <div className="skeleton skeleton-line user-analytics-history-skeleton-line" />
+              <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-short" />
+            </div>
+          ) : history.length === 0 ? (
             <p className="history-empty">No apply/skip history yet.</p>
           ) : (
             <ul className="history-list">
@@ -61,7 +69,8 @@ export default function UserAnalyticsCard({
                   <div>
                     <strong>{item.trial?.title ?? "Trial unavailable"}</strong>
                     <span>
-                      {formatAction(item.action)} • {formatDate(item.created_at)}
+                      {formatAction(item.action)} •{" "}
+                      {formatDate(item.created_at)}
                     </span>
                   </div>
                   {item.trial ? (
@@ -80,19 +89,21 @@ export default function UserAnalyticsCard({
         </div>
 
         <div className="user-analytics-details-panel">
-          {isLoading && (
-            <div className="user-analytics-detail-row">
-              <span className="user-analytics-detail-label">Loading...</span>
+          {isLoading ? (
+            <div className="user-analytics-details-skeleton" aria-hidden="true">
+              <div className="skeleton skeleton-line user-analytics-detail-skeleton-line" />
+              <div className="skeleton skeleton-line user-analytics-detail-skeleton-line" />
+              <div className="skeleton skeleton-line user-analytics-detail-skeleton-line" />
+              <div className="skeleton skeleton-line user-analytics-detail-skeleton-line user-analytics-detail-skeleton-line-wide" />
+              <div className="skeleton skeleton-line user-analytics-detail-skeleton-line" />
+              <div className="skeleton skeleton-line user-analytics-detail-skeleton-line user-analytics-detail-skeleton-line-short" />
             </div>
-          )}
-
-          {error && (
-            <div className="user-analytics-detail-row">
-              <span className="user-analytics-detail-label">{error}</span>
+          ) : error ? (
+            <div className="state-card state-card-error user-analytics-error-card">
+              <p className="state-card-title">Could not load analytics</p>
+              <p className="state-card-message">{error}</p>
             </div>
-          )}
-
-          {!isLoading && !error && stats && (
+          ) : stats ? (
             <>
               <div className="user-analytics-detail-row">
                 <span className="user-analytics-detail-label">
@@ -129,13 +140,14 @@ export default function UserAnalyticsCard({
                 </span>
               </div>
             </>
-          )}
+          ) : null}
 
           <div className="user-analytics-actions-row">
             <button
               type="button"
               className="atlas-button atlas-button-variant-1 user-analytics-more-info-button"
               onClick={onNavigateMoreDetails}
+              disabled={isLoading || !stats || Boolean(error)}
             >
               More Info
             </button>
