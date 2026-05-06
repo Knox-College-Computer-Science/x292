@@ -4,7 +4,6 @@ sqlalchemy
 pydantic
 email-validator
 requests
-python-jose
-passlib[bcrypt]
 python-jose[cryptography]
+passlib[bcrypt]
 pytest
