@@ -1,10 +1,10 @@
 .clinic-trial-card {
-  width: 1111px;
+  width: min(1111px, 100%);
   min-height: 540px;
   border-radius: 30px;
   padding: 42px 64px 56px;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    linear-gradient(var(--clinic-overlay), var(--clinic-overlay)),
     var(--accent-color);
 }
 
@@ -22,7 +22,7 @@
 }
 
 .clinic-trial-card-label {
-  color: #ffffff;
+  color: var(--on-brand);
   font-size: 46px;
   font-weight: 700;
   line-height: 1;
@@ -31,11 +31,11 @@
 .clinic-trial-card-row input {
   width: 100%;
   height: 63px;
-  border: 4px solid rgba(248, 221, 164, 0.92);
+  border: 4px solid rgba(255, 253, 249, 0.72);
   border-top-width: 0;
   border-radius: 0;
   background: transparent;
-  color: #ffffff;
+  color: var(--on-brand);
   padding: 0 14px;
   font-size: 24px;
   font-weight: 700;

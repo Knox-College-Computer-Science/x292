@@ -1,12 +1,12 @@
 .clinic-profile-card {
-  width: 1111px;
+  width: min(1111px, 100%);
   min-height: 480px;
   padding: 48px;
   border-radius: 12px;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    linear-gradient(var(--clinic-overlay), var(--clinic-overlay)),
     var(--accent-color);
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 .clinic-profile-form {
@@ -26,10 +26,10 @@
 .clinic-profile-form input,
 .clinic-profile-form textarea {
   width: 100%;
-  border: 1px solid var(--accent-color);
+  border: 1px solid rgba(255, 253, 249, 0.3);
   border-radius: 10px;
   background: transparent;
-  color: #ffffff;
+  color: var(--on-brand);
   padding: 12px 14px;
   font: inherit;
 }

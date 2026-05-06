@@ -18,8 +18,8 @@
   min-height: 209px;
   padding: 22px 26px;
   border-radius: 12px;
-  background: rgba(129, 52, 5, 0.44);
-  color: #ffffff;
+  background: var(--main-overlay);
+  color: var(--on-brand);
   font-size: 20px;
   line-height: 1.6;
   white-space: pre-line;

@@ -1,6 +1,6 @@
 .home-page {
   position: relative;
-  width: 1440px;
+  width: 100%;
   min-height: 2334px;
   margin: 0 auto;
   background: var(--main-color);

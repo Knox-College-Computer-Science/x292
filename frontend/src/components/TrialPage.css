@@ -1,5 +1,5 @@
 ﻿.trial-page {
-  width: min(1440px, 100%);
+  width: 100%;
   min-height: 100vh;
   margin: 0 auto;
   background: var(--accent-color);
@@ -7,7 +7,7 @@
 
 .trial-page-content {
   width: min(1111px, 94%);
-  margin: 28px auto 0;
+  margin: 67px auto 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -21,7 +21,7 @@
   align-items: end;
   padding: 14px;
   border-radius: 12px;
-  background: rgba(129, 52, 5, 0.15);
+  background: var(--main-tint);
 }
 
 .trial-filter-bar label {
@@ -34,11 +34,11 @@
 
 .trial-filter-bar input,
 .trial-filter-bar select {
-  border: 1px solid rgba(129, 52, 5, 0.4);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 10px;
   font: inherit;
-  background: #fff8e8;
+  background: var(--surface-3);
 }
 
 .trial-filter-checkbox {
@@ -54,12 +54,51 @@
 }
 
 .trial-state-error {
-  color: #8b1f00;
+  color: var(--danger-color);
+}
+
+.trial-card-skeleton {
+  border-radius: 14px;
+  background: var(--main-tint);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trial-card-skeleton-title {
+  width: 52%;
+  height: 22px;
+}
+
+.trial-card-skeleton-meta {
+  width: 34%;
+  height: 16px;
+}
+
+.trial-card-skeleton-body {
+  width: 100%;
+  min-height: 210px;
+}
+
+.trial-card-skeleton-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.trial-card-skeleton-action {
+  width: 165px;
+  height: 50px;
+  border-radius: 8px;
+}
+
+.trial-error-card {
+  margin-top: 2px;
 }
 
 .trial-page-intro-card {
   border-radius: 14px;
-  background: rgba(129, 52, 5, 0.17);
+  background: var(--main-tint);
   padding: 24px;
   color: var(--main-color);
 }

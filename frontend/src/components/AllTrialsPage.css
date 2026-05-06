@@ -1,5 +1,5 @@
 ﻿.all-trials-page {
-  width: min(1440px, 100%);
+  width: 100%;
   min-height: 100vh;
   margin: 0 auto;
   background: var(--accent-color);
@@ -10,7 +10,7 @@
   flex-direction: column;
   gap: 28px;
   width: min(1111px, 94%);
-  margin: 34px auto 0;
+  margin: 67px auto 0;
   padding-bottom: 46px;
 }
 
@@ -21,7 +21,7 @@
   align-items: end;
   padding: 14px;
   border-radius: 12px;
-  background: rgba(129, 52, 5, 0.15);
+  background: var(--main-tint);
 }
 
 .all-trials-filters label {
@@ -34,11 +34,11 @@
 
 .all-trials-filters input,
 .all-trials-filters select {
-  border: 1px solid rgba(129, 52, 5, 0.4);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   padding: 10px;
   font: inherit;
-  background: #fff8e8;
+  background: var(--surface-3);
 }
 
 .all-trials-checkbox {
@@ -81,12 +81,12 @@
 
 .all-trials-up-next-entry-accent-40,
 .all-trials-status-entry-accent-40 {
-  background: rgba(248, 221, 164, 0.4);
+  background: var(--highlight-overlay);
 }
 
 .all-trials-up-next-entry-accent-30,
 .all-trials-status-entry-accent-30 {
-  background: rgba(248, 221, 164, 0.3);
+  background: var(--highlight-overlay-soft);
 }
 
 .all-trials-up-next-title,
@@ -104,7 +104,7 @@
 .all-trials-match-reason {
   display: block;
   margin-top: 5px;
-  color: #fff4dc;
+  color: var(--highlight-color);
   font-size: 14px;
 }
 
@@ -129,10 +129,43 @@
   display: flex;
   align-items: center;
   padding: 0 24px;
-  color: #ffffff;
+  color: var(--on-brand);
   font-size: 16px;
   font-weight: 700;
-  background: rgba(248, 221, 164, 0.35);
+  background: var(--highlight-overlay);
+}
+
+.all-trials-message-row-transparent {
+  background: transparent;
+  min-height: auto;
+  padding: 14px 24px;
+}
+
+.all-trials-error-card {
+  width: 100%;
+}
+
+.all-trials-skeleton-title {
+  width: 72%;
+  height: 16px;
+}
+
+.all-trials-skeleton-date {
+  width: 120px;
+  height: 14px;
+  justify-self: end;
+}
+
+.all-trials-skeleton-meta {
+  width: 88%;
+  height: 14px;
+}
+
+.all-trials-skeleton-button {
+  width: 120px;
+  height: 40px;
+  border-radius: 8px;
+  justify-self: end;
 }
 
 .all-trials-status-more-details {
@@ -152,7 +185,7 @@
 }
 
 .all-trials-status-more-details:hover:not(:disabled) {
-  background: rgba(248, 221, 164, 0.1);
+  background: rgba(255, 253, 249, 0.12);
 }
 
 .all-trials-actions {

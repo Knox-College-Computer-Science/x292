@@ -66,7 +66,7 @@ export default function AllTrialsPage({
             participation: normalizedParticipation,
             requiresCompensation,
           },
-          authToken
+          authToken,
         ),
         authToken ? getMySavedTrials(authToken) : Promise.resolve([]),
       ]);
@@ -77,7 +77,7 @@ export default function AllTrialsPage({
       setError(
         err instanceof Error
           ? err.message
-          : "Could not load trials. Please try again."
+          : "Could not load trials. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -139,7 +139,10 @@ export default function AllTrialsPage({
 
           <label>
             Status
-            <select value={status} onChange={(event) => setStatus(event.target.value)}>
+            <select
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+            >
               <option value="Recruiting">Recruiting</option>
               <option value="Not yet recruiting">Not yet recruiting</option>
               <option value="">Any</option>
@@ -148,7 +151,10 @@ export default function AllTrialsPage({
 
           <label>
             Study Phase
-            <select value={phase} onChange={(event) => setPhase(event.target.value)}>
+            <select
+              value={phase}
+              onChange={(event) => setPhase(event.target.value)}
+            >
               <option value="">Any</option>
               <option value="Phase 1">Phase 1</option>
               <option value="Phase 2">Phase 2</option>
@@ -173,7 +179,9 @@ export default function AllTrialsPage({
             <input
               type="checkbox"
               checked={requiresCompensation}
-              onChange={(event) => setRequiresCompensation(event.target.checked)}
+              onChange={(event) =>
+                setRequiresCompensation(event.target.checked)
+              }
             />
             Compensation only
           </label>
@@ -194,9 +202,26 @@ export default function AllTrialsPage({
         <div className="all-trials-up-next">
           <div className="all-trials-up-next-header">Up Next</div>
           {loading ? (
-            <div className="all-trials-message-row">Loading trials...</div>
+            Array.from({ length: 2 }, (_, index) => (
+              <div
+                key={`up-next-skeleton-${index}`}
+                className={`all-trials-up-next-entry all-trials-up-next-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
+                aria-hidden="true"
+              >
+                <div className="skeleton skeleton-line all-trials-skeleton-title" />
+                <div className="skeleton skeleton-line all-trials-skeleton-date" />
+              </div>
+            ))
           ) : error ? (
-            <div className="all-trials-message-row">{error}</div>
+            <div className="all-trials-message-row all-trials-message-row-transparent">
+              <div
+                className="state-card state-card-error all-trials-error-card"
+                role="alert"
+              >
+                <p className="state-card-title">Could not load trials</p>
+                <p className="state-card-message">{error}</p>
+              </div>
+            </div>
           ) : upNextTrials.length === 0 ? (
             <div className="all-trials-message-row">No trials found.</div>
           ) : (
@@ -227,12 +252,31 @@ export default function AllTrialsPage({
             <div className="all-trials-status-status-col">Status</div>
           </div>
           {loading ? (
-            <div className="all-trials-message-row">Loading trials...</div>
+            Array.from({ length: 6 }, (_, index) => (
+              <div
+                key={`status-skeleton-${index}`}
+                className={`all-trials-status-entry all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
+                aria-hidden="true"
+              >
+                <div className="skeleton skeleton-line all-trials-skeleton-title" />
+                <div className="skeleton skeleton-line all-trials-skeleton-meta" />
+                <div className="skeleton skeleton-block all-trials-skeleton-button" />
+              </div>
+            ))
           ) : error ? (
-            <div className="all-trials-message-row">{error}</div>
+            <div className="all-trials-message-row all-trials-message-row-transparent">
+              <div
+                className="state-card state-card-error all-trials-error-card"
+                role="alert"
+              >
+                <p className="state-card-title">Could not load trials</p>
+                <p className="state-card-message">{error}</p>
+              </div>
+            </div>
           ) : statusTrials.length === 0 ? (
             <div className="all-trials-message-row">
-              No trials matched the selected filters. Try broadening your criteria.
+              No trials matched the selected filters. Try broadening your
+              criteria.
             </div>
           ) : (
             statusTrials.map((trial, index) => (
@@ -241,7 +285,9 @@ export default function AllTrialsPage({
                 className={`all-trials-status-entry all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
               >
                 <div className="all-trials-status-title">{trial.title}</div>
-                <div className="all-trials-status-date">{formatTrialMeta(trial)}</div>
+                <div className="all-trials-status-date">
+                  {formatTrialMeta(trial)}
+                </div>
                 <button
                   type="button"
                   className="atlas-button all-trials-status-more-details"

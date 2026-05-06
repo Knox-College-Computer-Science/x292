@@ -56,14 +56,16 @@ export default function TrialPage({
           participation: normalizedParticipation,
           requiresCompensation,
         },
-        authToken
+        authToken,
       );
 
       setTrials(data);
       setCurrentIndex(0);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Could not load trial matcher cards."
+        err instanceof Error
+          ? err.message
+          : "Could not load trial matcher cards.",
       );
       setTrials([]);
       setCurrentIndex(0);
@@ -78,7 +80,7 @@ export default function TrialPage({
 
   const currentTrial = useMemo(
     () => (currentIndex < trials.length ? trials[currentIndex] : null),
-    [currentIndex, trials]
+    [currentIndex, trials],
   );
 
   async function handleAction(action: "save" | "pass") {
@@ -102,7 +104,7 @@ export default function TrialPage({
       setCurrentIndex((index) => index + 1);
     } catch (err) {
       setActionMessage(
-        err instanceof Error ? err.message : "Could not update trial action."
+        err instanceof Error ? err.message : "Could not update trial action.",
       );
     }
   }
@@ -145,7 +147,10 @@ export default function TrialPage({
 
           <label>
             Status
-            <select value={status} onChange={(event) => setStatus(event.target.value)}>
+            <select
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+            >
               <option value="Recruiting">Recruiting</option>
               <option value="Not yet recruiting">Not yet recruiting</option>
               <option value="">Any</option>
@@ -154,7 +159,10 @@ export default function TrialPage({
 
           <label>
             Phase
-            <select value={phase} onChange={(event) => setPhase(event.target.value)}>
+            <select
+              value={phase}
+              onChange={(event) => setPhase(event.target.value)}
+            >
               <option value="">Any</option>
               <option value="Phase 1">Phase 1</option>
               <option value="Phase 2">Phase 2</option>
@@ -179,7 +187,9 @@ export default function TrialPage({
             <input
               type="checkbox"
               checked={requiresCompensation}
-              onChange={(event) => setRequiresCompensation(event.target.checked)}
+              onChange={(event) =>
+                setRequiresCompensation(event.target.checked)
+              }
             />
             Compensation only
           </label>
@@ -189,8 +199,26 @@ export default function TrialPage({
           </button>
         </form>
 
-        {loading ? <p className="trial-state">Loading matcher cards...</p> : null}
-        {error ? <p className="trial-state trial-state-error">{error}</p> : null}
+        {loading ? (
+          <div className="trial-card-skeleton" aria-hidden="true">
+            <div className="skeleton skeleton-line trial-card-skeleton-title" />
+            <div className="skeleton skeleton-line trial-card-skeleton-meta" />
+            <div className="skeleton skeleton-block trial-card-skeleton-body" />
+            <div className="trial-card-skeleton-actions">
+              <div className="skeleton skeleton-block trial-card-skeleton-action" />
+              <div className="skeleton skeleton-block trial-card-skeleton-action" />
+            </div>
+          </div>
+        ) : null}
+        {error ? (
+          <div
+            className="state-card state-card-error trial-error-card"
+            role="alert"
+          >
+            <p className="state-card-title">Could not load matcher cards</p>
+            <p className="state-card-message">{error}</p>
+          </div>
+        ) : null}
 
         {!loading && !error && currentTrial ? (
           <TrialCard
@@ -207,8 +235,8 @@ export default function TrialPage({
           <div className="trial-page-intro-card">
             <h2>All cards reviewed</h2>
             <p>
-              You have swiped through this filtered set. Update filters or refresh
-              cards to continue matching.
+              You have swiped through this filtered set. Update filters or
+              refresh cards to continue matching.
             </p>
             <button
               type="button"
