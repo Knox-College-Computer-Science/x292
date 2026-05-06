@@ -680,9 +680,9 @@ export default function App() {
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateAddTrials={() => setView("clinic-trial-card")}
-        onNavigateMoreDetails={() => {
-          setClinicMoreBackView("all-trials");
-          setView("clinic-analytics-more");
+        onNavigateMoreDetails={(trialId) => {
+          setSelectedTrialId(trialId);
+          setView("trial-more-details");
         }}
         onSelectExperience={setExperience}
       />
@@ -698,6 +698,21 @@ export default function App() {
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSubmitTrial={() => setView("all-trials")}
+        onSelectExperience={setExperience}
+      />
+    );
+  }
+
+  if (view === "trial-more-details" && experience === "clinics") {
+    return (
+      <TrialMoreDetailsPage
+        trialId={selectedTrialId}
+        authToken={session?.token}
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView("profile")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
       />
     );
@@ -730,9 +745,9 @@ export default function App() {
         onNavigateProfile={() => setView("profile")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
-        onNavigateMoreDetails={() => {
-          setClinicMoreBackView("analytics");
-          setView("clinic-analytics-more");
+        onNavigateMoreDetails={(trialId) => {
+          setSelectedTrialId(trialId);
+          setView("trial-more-details");
         }}
         onSelectExperience={setExperience}
       />
