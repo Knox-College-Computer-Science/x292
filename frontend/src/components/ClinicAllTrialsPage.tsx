@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { listTrials, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
 import "./ClinicAllTrialsPage.css";
 
@@ -8,19 +10,18 @@ type ClinicAllTrialsPageProps = {
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onNavigateAddTrials: () => void;
-  onNavigateMoreDetails: () => void;
+  onNavigateMoreDetails: (trialId: string) => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-const statusTrials = [
-  { id: 1, title: "Title", date: "[Date, and other info]" },
-  { id: 2, title: "Title", date: "[Date, and other info]" },
-  { id: 3, title: "Title", date: "[Date, and other info]" },
-  { id: 4, title: "Title", date: "[Date, and other info]" },
-  { id: 5, title: "Title", date: "[Date, and other info]" },
-  { id: 6, title: "Title", date: "[Date, and other info]" },
-  { id: 7, title: "Title", date: "[Date, and other info]" },
-];
+const DEFAULT_CONDITION = "diabetes";
+
+function formatTrialMeta(trial: Trial) {
+  const status = trial.recruitment_status || "Status not listed";
+  const phase = trial.study_phase ?? "Phase not listed";
+  const location = trial.location || "Location not listed";
+  return `${status} - ${phase} - ${location}`;
+}
 
 export default function ClinicAllTrialsPage({
   selectedExperience,
@@ -32,6 +33,35 @@ export default function ClinicAllTrialsPage({
   onNavigateMoreDetails,
   onSelectExperience,
 }: ClinicAllTrialsPageProps) {
+  const [trials, setTrials] = useState<Trial[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function loadTrials() {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const trialData = await listTrials({ condition: DEFAULT_CONDITION });
+      setTrials(trialData);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not load trials. Please try again.",
+      );
+      setTrials([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadTrials();
+  }, []);
+
+  const statusTrials = trials.slice(0, 8);
+
   return (
     <main className="clinic-all-trials-page">
       <HomeNavBar
@@ -52,24 +82,54 @@ export default function ClinicAllTrialsPage({
             <div className="clinic-all-trials-status-trial-col">Trial</div>
             <div className="clinic-all-trials-status-status-col">Status</div>
           </div>
-          {statusTrials.map((trial, index) => (
-            <div
-              key={trial.id}
-              className={`clinic-all-trials-status-entry clinic-all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
-            >
-              <div className="clinic-all-trials-status-title">
-                {trial.title}
-              </div>
-              <div className="clinic-all-trials-status-date">{trial.date}</div>
-              <button
-                type="button"
-                className="atlas-button clinic-all-trials-status-more-details"
-                onClick={onNavigateMoreDetails}
+          {loading ? (
+            Array.from({ length: 6 }, (_, index) => (
+              <div
+                key={`clinic-status-skeleton-${index}`}
+                className={`clinic-all-trials-status-entry clinic-all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
+                aria-hidden="true"
               >
-                More Info
-              </button>
+                <div className="skeleton skeleton-line clinic-all-trials-skeleton-title" />
+                <div className="skeleton skeleton-line clinic-all-trials-skeleton-meta" />
+                <div className="skeleton skeleton-block clinic-all-trials-skeleton-button" />
+              </div>
+            ))
+          ) : error ? (
+            <div className="clinic-all-trials-message-row clinic-all-trials-message-row-transparent">
+              <div
+                className="state-card state-card-error clinic-all-trials-error-card"
+                role="alert"
+              >
+                <p className="state-card-title">Could not load trials</p>
+                <p className="state-card-message">{error}</p>
+              </div>
             </div>
-          ))}
+          ) : statusTrials.length === 0 ? (
+            <div className="clinic-all-trials-message-row">
+              No trials found yet.
+            </div>
+          ) : (
+            statusTrials.map((trial, index) => (
+              <div
+                key={trial.id}
+                className={`clinic-all-trials-status-entry clinic-all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
+              >
+                <div className="clinic-all-trials-status-title">
+                  {trial.title}
+                </div>
+                <div className="clinic-all-trials-status-date">
+                  {formatTrialMeta(trial)}
+                </div>
+                <button
+                  type="button"
+                  className="atlas-button clinic-all-trials-status-more-details"
+                  onClick={() => onNavigateMoreDetails(trial.id)}
+                >
+                  More Info
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
         <div className="clinic-all-trials-actions">
@@ -79,6 +139,13 @@ export default function ClinicAllTrialsPage({
             onClick={onNavigateProfile}
           >
             Back
+          </button>
+          <button
+            type="button"
+            className="atlas-button atlas-button-variant-3 clinic-all-trials-add-trials"
+            onClick={() => void loadTrials()}
+          >
+            Refresh Trials
           </button>
           <button
             type="button"
