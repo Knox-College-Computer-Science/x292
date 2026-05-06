@@ -5,7 +5,7 @@ type ClinicAnalyticsCardProps = {
   stats: TrialAnalyticsStats | null;
   isLoading: boolean;
   error: string | null;
-  onNavigateMoreDetails: () => void;
+  onNavigateMoreDetails: (trialId: string) => void;
 };
 
 export default function ClinicAnalyticsCard({
@@ -21,6 +21,7 @@ export default function ClinicAnalyticsCard({
   const topDropOff = stats
     ? Object.entries(stats.drop_off_by_category).sort((a, b) => b[1] - a[1])[0]
     : null;
+  const topTrial = stats?.top_trials?.[0] ?? null;
 
   return (
     <section
@@ -95,6 +96,11 @@ export default function ClinicAnalyticsCard({
                   {topDropOff ? topDropOff[0] : "None"}
                 </span>
               </div>
+              <div className="clinic-analytics-detail-row">
+                <span className="clinic-analytics-detail-label">
+                  Top Trial: {topTrial ? topTrial.title : "None"}
+                </span>
+              </div>
             </>
           ) : null}
 
@@ -102,8 +108,8 @@ export default function ClinicAnalyticsCard({
             <button
               type="button"
               className="atlas-button atlas-button-variant-1 clinic-analytics-more-info-button"
-              onClick={onNavigateMoreDetails}
-              disabled={isLoading || !stats || Boolean(error)}
+              onClick={() => topTrial && onNavigateMoreDetails(topTrial.id)}
+              disabled={isLoading || !stats || Boolean(error) || !topTrial}
             >
               More Info
             </button>

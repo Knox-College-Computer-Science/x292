@@ -77,21 +77,29 @@
 .clinic-all-trials-status-title {
   position: absolute;
   left: 106px;
+  width: 280px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 20px;
   font-weight: 700;
   color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clinic-all-trials-status-date {
   position: absolute;
   left: 432px;
+  right: 190px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 20px;
   font-weight: 700;
   color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clinic-all-trials-status-more-details {
@@ -115,6 +123,52 @@
 
 .clinic-all-trials-status-more-details:hover:not(:disabled) {
   background: rgba(255, 253, 249, 0.12);
+}
+
+.clinic-all-trials-message-row {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--highlight-overlay);
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.clinic-all-trials-message-row-transparent {
+  background: transparent;
+}
+
+.clinic-all-trials-error-card {
+  width: min(620px, 92%);
+}
+
+.clinic-all-trials-skeleton-title {
+  position: absolute;
+  left: 106px;
+  width: 230px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.clinic-all-trials-skeleton-meta {
+  position: absolute;
+  left: 432px;
+  width: 360px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.clinic-all-trials-skeleton-button {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100px;
+  height: 40px;
 }
 
 .clinic-all-trials-actions {
