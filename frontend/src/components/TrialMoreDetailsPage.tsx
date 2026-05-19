@@ -2,6 +2,7 @@
 import { getTrial, passTrial, saveTrial, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
 import TextBox from "./TextBox";
+import TrialRating from "./TrialRating";
 import "./TrialMoreDetailsPage.css";
 
 type TrialMoreDetailsPageProps = {
@@ -14,6 +15,14 @@ type TrialMoreDetailsPageProps = {
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
+
+function formatMatchRating(score: number | null | undefined) {
+  if (typeof score !== "number") {
+    return "N/A";
+  }
+
+  return `${Math.round(score)}%`;
+}
 
 export default function TrialMoreDetailsPage({
   trialId,
@@ -129,6 +138,18 @@ export default function TrialMoreDetailsPage({
           <TextBox heading="Trial not found" body="No trial details were found." />
         ) : (
           <>
+            <div className="trial-more-details-match-summary">
+              <div>
+                <h2>{trial.title}</h2>
+                <p>
+                  {trial.match_reasons && trial.match_reasons.length > 0
+                    ? trial.match_reasons.join(", ")
+                    : "No match reasons available yet."}
+                </p>
+              </div>
+              <TrialRating value={formatMatchRating(trial.match_score)} />
+            </div>
+
             <TextBox
               heading="Study Summary"
               body={
