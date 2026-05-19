@@ -8,7 +8,7 @@ from ..auth import get_current_user, get_current_user_optional
 from ..database import get_db
 from ..services.cleaner import clean_trial
 from ..services.clinical_api import fetch_trials
-from ..services.matcher import match_trials
+from ..services.matcher import match_trials, score_trial
 
 router = APIRouter(prefix="/trials", tags=["trials"])
 
@@ -37,15 +37,32 @@ def _trial_to_dict(trial: models.Trial, score: float | None = None, reasons: lis
 
 
 def _history_item_to_dict(
-    interaction: models.TrialInteraction, trial: Optional[models.Trial]
+    interaction: models.TrialInteraction,
+    trial: Optional[models.Trial],
+    score: float | None = None,
+    reasons: list[str] | None = None,
 ) -> dict:
     return {
         "interaction_id": interaction.id,
         "trial_id": interaction.trial_id,
         "action": interaction.action,
         "created_at": interaction.created_at,
-        "trial": _trial_to_dict(trial) if trial else None,
+        "trial": _trial_to_dict(trial, score=score, reasons=reasons) if trial else None,
     }
+
+
+def _score_for_user(
+    db: Session,
+    user_id: str,
+    trial: Optional[models.Trial],
+) -> tuple[float | None, list[str]]:
+    if not trial:
+        return None, []
+
+    try:
+        return score_trial(db, user_id, trial)
+    except Exception:
+        return None, []
 
 
 @router.get("/")
@@ -151,7 +168,14 @@ def get_my_interaction_history(
         skip=skip,
         limit=limit,
     )
-    return [_history_item_to_dict(interaction, trial) for interaction, trial in rows]
+    return [
+        _history_item_to_dict(
+            interaction,
+            trial,
+            *_score_for_user(db, current_user.id, trial),
+        )
+        for interaction, trial in rows
+    ]
 
 
 @router.get("/{trial_id}")
@@ -216,7 +240,10 @@ def get_my_saved_trials(
     current_user: models.User = Depends(get_current_user),
 ):
     trials = crud.get_saved_trials(db, current_user.id, skip, limit)
-    return [_trial_to_dict(trial) for trial in trials]
+    return [
+        _trial_to_dict(trial, *_score_for_user(db, current_user.id, trial))
+        for trial in trials
+    ]
 
 
 @router.get("/me/passed")
@@ -227,7 +254,10 @@ def get_my_passed_trials(
     current_user: models.User = Depends(get_current_user),
 ):
     trials = crud.get_passed_trials(db, current_user.id, skip, limit)
-    return [_trial_to_dict(trial) for trial in trials]
+    return [
+        _trial_to_dict(trial, *_score_for_user(db, current_user.id, trial))
+        for trial in trials
+    ]
 
 
 @router.get("/user/{user_id}/saved")

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { InteractionHistoryItem, TrialAnalyticsStats } from "../api";
 import Arrows from "./Arrows";
+import TrialRating from "./TrialRating";
 import "./UserAnalyticsCard.css";
 import useSwipeActions from "./useSwipeActions";
 
@@ -20,9 +21,24 @@ function formatAction(action: "save" | "pass" | "view") {
 }
 
 function formatDate(iso: string) {
-  const parsed = new Date(iso);
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso);
+  const parsed = new Date(hasTimezone ? iso : `${iso}Z`);
   if (Number.isNaN(parsed.getTime())) return iso;
-  return parsed.toLocaleString();
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(parsed);
+}
+
+function formatMatchRating(score: number | null | undefined) {
+  if (typeof score !== "number") {
+    return "N/A";
+  }
+
+  return `${Math.round(score)}%`;
 }
 
 export default function UserAnalyticsCard({
@@ -45,6 +61,7 @@ export default function UserAnalyticsCard({
 
   const currentHistoryItem =
     historyTrials[activeHistoryIndex] ?? historyTrials[0] ?? null;
+  const currentTrial = currentHistoryItem?.trial ?? null;
 
   useEffect(() => {
     if (activeHistoryIndex >= historyTrials.length) setActiveHistoryIndex(0);
@@ -86,7 +103,10 @@ export default function UserAnalyticsCard({
       {!showHistoryList ? (
         <div className="user-analytics-visual-area">
           <div className="user-analytics-visual-box">
-            <h3>Swipe Through Trials</h3>
+            <div className="user-analytics-visual-heading">
+              <h3>Swipe Through Trials</h3>
+              <TrialRating value={formatMatchRating(currentTrial?.match_score)} />
+            </div>
 
             {isLoading ? (
               <div
@@ -97,7 +117,7 @@ export default function UserAnalyticsCard({
                 <div className="skeleton skeleton-line user-analytics-history-skeleton-line" />
                 <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-short" />
               </div>
-            ) : !currentHistoryItem || !currentHistoryItem.trial ? (
+            ) : !currentHistoryItem || !currentTrial ? (
               <p className="history-empty">No apply/skip history yet.</p>
             ) : (
               <div
@@ -115,7 +135,7 @@ export default function UserAnalyticsCard({
                 </div>
 
                 <h4 className="user-analytics-history-card-title">
-                  {currentHistoryItem.trial.title}
+                  {currentTrial.title}
                 </h4>
 
                 <p className="user-analytics-history-card-meta">
@@ -123,26 +143,23 @@ export default function UserAnalyticsCard({
                 </p>
 
                 <div className="user-analytics-history-card-summary">
-                  {currentHistoryItem.trial.match_reasons &&
-                  currentHistoryItem.trial.match_reasons.length > 0 ? (
+                  {currentTrial.match_reasons &&
+                  currentTrial.match_reasons.length > 0 ? (
                     <p>
                       Match reasons:{" "}
-                      {currentHistoryItem.trial.match_reasons.join(", ")}
+                      {currentTrial.match_reasons.join(", ")}
                     </p>
                   ) : null}
 
                   <p>
-                    {currentHistoryItem.trial.condition} •{" "}
-                    {currentHistoryItem.trial.location}
+                    {currentTrial.condition} • {currentTrial.location}
                   </p>
                 </div>
 
                 <button
                   type="button"
                   className="atlas-button atlas-button-variant-3 user-analytics-history-reopen"
-                  onClick={() =>
-                    onNavigateHistoryTrial(currentHistoryItem.trial!.id)
-                  }
+                  onClick={() => onNavigateHistoryTrial(currentTrial.id)}
                 >
                   Reopen Trial
                 </button>

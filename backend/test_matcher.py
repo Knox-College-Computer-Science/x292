@@ -17,6 +17,10 @@ def create_user_with_profile(
     health_conditions="Diabetes",
     location="Chicago",
     participation_preference="Either",
+    age_range_min=None,
+    age_range_max=None,
+    preferred_study_phase=None,
+    compensation_required=False,
 ):
     user = models.User(email=email, hashed_password="hashed", role="user")
     db_session.add(user)
@@ -28,6 +32,10 @@ def create_user_with_profile(
         health_conditions=health_conditions,
         location=location,
         participation_preference=participation_preference,
+        age_range_min=age_range_min,
+        age_range_max=age_range_max,
+        preferred_study_phase=preferred_study_phase,
+        compensation_required=compensation_required,
         profile_completed=True,
     )
     db_session.add(profile)
@@ -44,6 +52,10 @@ def create_trial(
     location,
     recruitment_status="RECRUITING",
     remote_eligible=False,
+    study_phase=None,
+    compensation=None,
+    eligibility_age_min=None,
+    eligibility_age_max=None,
 ):
     trial = models.Trial(
         title=title,
@@ -51,6 +63,10 @@ def create_trial(
         location=location,
         recruitment_status=recruitment_status,
         remote_eligible=remote_eligible,
+        study_phase=study_phase,
+        compensation=compensation,
+        eligibility_age_min=eligibility_age_min,
+        eligibility_age_max=eligibility_age_max,
     )
     db_session.add(trial)
     db_session.commit()
@@ -64,6 +80,8 @@ TEST_LABELS = {
     "test_location_match_is_case_insensitive_and_safe_for_missing_values": "Location matching handles case and missing values",
     "test_remote_match_respects_participation_preference": "Remote scoring respects user preference",
     "test_score_from_metrics_builds_weighted_score_and_reasons": "Weighted score and reasons are built correctly",
+    "test_score_from_metrics_includes_profile_preference_signals": "Profile preference signals improve score",
+    "test_score_trial_scores_saved_or_passed_trials_for_analytics": "Saved history trials can still be scored",
     "test_pareto_front_removes_dominated_trials": "Pareto front removes dominated trials",
     "test_match_trials_returns_empty_list_when_no_trials_match_any_metric": "No-match scenarios return an empty result",
     "test_match_trials_ranks_best_remaining_trial_and_skips_saved_or_passed": "Saved and passed trials are excluded from ranking",
@@ -180,6 +198,31 @@ class MatcherTests(unittest.TestCase):
             ["condition match", "location match", "actively recruiting"],
         )
 
+    def test_score_from_metrics_includes_profile_preference_signals(self):
+        score, reasons = matcher._score_from_metrics(
+            {
+                "condition": 1,
+                "location": 0,
+                "recruiting": 1,
+                "remote": 0,
+                "age": 1,
+                "phase": 1,
+                "compensation": 1,
+            }
+        )
+
+        self.assertEqual(score, 90)
+        self.assertEqual(
+            reasons,
+            [
+                "condition match",
+                "actively recruiting",
+                "age range compatible",
+                "preferred phase",
+                "compensation available",
+            ],
+        )
+
     def test_pareto_front_removes_dominated_trials(self):
         dominated_trial = object()
         best_trial = object()
@@ -217,6 +260,43 @@ class MatcherTests(unittest.TestCase):
         matches = matcher.match_trials(self.db_session, user.id, [no_match_trial])
 
         self.assertEqual(matches, [])
+
+    def test_score_trial_scores_saved_or_passed_trials_for_analytics(self):
+        user = create_user_with_profile(
+            self.db_session,
+            age_range_min=18,
+            age_range_max=65,
+            preferred_study_phase="Phase 2",
+            compensation_required=True,
+        )
+        saved_trial = create_trial(
+            self.db_session,
+            title="Saved Match",
+            condition="Diabetes",
+            location="Chicago",
+            recruitment_status="RECRUITING",
+            remote_eligible=False,
+            study_phase="Phase 2",
+            compensation="$100",
+            eligibility_age_min=18,
+            eligibility_age_max=80,
+        )
+        self.db_session.add(
+            models.TrialInteraction(
+                user_id=user.id,
+                trial_id=saved_trial.id,
+                action="save",
+                trial_title=saved_trial.title,
+            )
+        )
+        self.db_session.commit()
+
+        score, reasons = matcher.score_trial(self.db_session, user.id, saved_trial)
+
+        self.assertEqual(score, 100)
+        self.assertIn("age range compatible", reasons)
+        self.assertIn("preferred phase", reasons)
+        self.assertIn("compensation available", reasons)
 
     def test_match_trials_ranks_best_remaining_trial_and_skips_saved_or_passed(self):
         user = create_user_with_profile(self.db_session)

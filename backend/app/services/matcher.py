@@ -44,6 +44,20 @@ def _remote_match(participation_preference: str, remote_eligible: bool) -> int:
     return 0
 
 
+def _phase_match(preferred_phase: str, trial_phase: str) -> int:
+    if not preferred_phase or preferred_phase.lower() == "any" or not trial_phase:
+        return 0
+
+    return 1 if preferred_phase.lower() in trial_phase.lower() else 0
+
+
+def _compensation_match(compensation_required: bool, compensation: str) -> int:
+    if not compensation_required or not compensation:
+        return 0
+
+    return 1
+
+
 def _age_compatible(profile: models.UserProfile, trial: models.Trial) -> bool:
     preferred_min = profile.age_range_min
     preferred_max = profile.age_range_max
@@ -66,6 +80,7 @@ def _build_metrics(profile: models.UserProfile, trial: models.Trial) -> Dict[str
     use_condition = enabled.get("health_conditions", True)
     use_location = enabled.get("location", True)
     use_participation = enabled.get("participation_preference", True)
+    use_age = enabled.get("age_range", True)
 
     return {
         "condition": _condition_match(profile.health_conditions, trial.condition)
@@ -76,6 +91,16 @@ def _build_metrics(profile: models.UserProfile, trial: models.Trial) -> Dict[str
         "remote": _remote_match(profile.participation_preference, trial.remote_eligible)
         if use_participation
         else 0,
+        "age": 1
+        if use_age
+        and (profile.age_range_min is not None or profile.age_range_max is not None)
+        and _age_compatible(profile, trial)
+        else 0,
+        "phase": _phase_match(profile.preferred_study_phase, trial.study_phase),
+        "compensation": _compensation_match(
+            profile.compensation_required,
+            trial.compensation,
+        ),
     }
 
 
@@ -109,23 +134,35 @@ def _score_from_metrics(metrics: Dict[str, int]) -> Tuple[float, List[str]]:
     score = 0.0
     reasons = []
 
-    if metrics["condition"]:
+    if metrics.get("condition"):
         score += 40
         reasons.append("condition match")
 
-    if metrics["location"]:
+    if metrics.get("location"):
         score += 30
         reasons.append("location match")
 
-    if metrics["recruiting"]:
+    if metrics.get("recruiting"):
         score += 20
         reasons.append("actively recruiting")
 
-    if metrics["remote"]:
+    if metrics.get("remote"):
         score += 10
         reasons.append("remote eligible")
 
-    return score, reasons
+    if metrics.get("age"):
+        score += 10
+        reasons.append("age range compatible")
+
+    if metrics.get("phase"):
+        score += 10
+        reasons.append("preferred phase")
+
+    if metrics.get("compensation"):
+        score += 10
+        reasons.append("compensation available")
+
+    return min(score, 100), reasons
 
 
 def match_trials(
@@ -172,6 +209,19 @@ def match_trials(
 
     matched_trials.sort(key=lambda x: x[1], reverse=True)
     return matched_trials
+
+
+def score_trial(
+    db: Session,
+    user_id: str,
+    trial: models.Trial,
+) -> Tuple[float, List[str]]:
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user or not user.profile:
+        raise Exception("User profile not found")
+
+    metrics = _build_metrics(user.profile, trial)
+    return _score_from_metrics(metrics)
 
 
 def get_matched_trials(db: Session, user_id: str, condition: str) -> List[models.Trial]:
