@@ -190,7 +190,6 @@ export default function AllTrialsPage({
           <button type="submit" className="atlas-button atlas-button-variant-3">
             Apply filters
           </button>
-
         </form>
 
         <div className="all-trials-filter-actions">

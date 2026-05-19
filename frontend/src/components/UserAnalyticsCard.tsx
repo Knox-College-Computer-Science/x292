@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { InteractionHistoryItem, TrialAnalyticsStats } from "../api";
 import Arrows from "./Arrows";
 import "./UserAnalyticsCard.css";
@@ -14,20 +14,14 @@ type UserAnalyticsCardProps = {
 };
 
 function formatAction(action: "save" | "pass" | "view") {
-  if (action === "save") {
-    return "Applied";
-  }
-  if (action === "pass") {
-    return "Skipped";
-  }
+  if (action === "save") return "Applied";
+  if (action === "pass") return "Skipped";
   return "Viewed";
 }
 
 function formatDate(iso: string) {
   const parsed = new Date(iso);
-  if (Number.isNaN(parsed.getTime())) {
-    return iso;
-  }
+  if (Number.isNaN(parsed.getTime())) return iso;
   return parsed.toLocaleString();
 }
 
@@ -53,20 +47,16 @@ export default function UserAnalyticsCard({
     historyTrials[activeHistoryIndex] ?? historyTrials[0] ?? null;
 
   useEffect(() => {
-    if (activeHistoryIndex >= historyTrials.length) {
-      setActiveHistoryIndex(0);
-    }
+    if (activeHistoryIndex >= historyTrials.length) setActiveHistoryIndex(0);
   }, [activeHistoryIndex, historyTrials.length]);
 
   const swipeActions = useSwipeActions({
-    onSwipeLeft: () => {
+    onSwipeLeft: () =>
       setActiveHistoryIndex((index) =>
         Math.min(index + 1, Math.max(historyTrials.length - 1, 0)),
-      );
-    },
-    onSwipeRight: () => {
-      setActiveHistoryIndex((index) => Math.max(index - 1, 0));
-    },
+      ),
+    onSwipeRight: () =>
+      setActiveHistoryIndex((index) => Math.max(index - 1, 0)),
   });
 
   const topCategory = stats
@@ -86,7 +76,7 @@ export default function UserAnalyticsCard({
         <button
           type="button"
           className="atlas-button atlas-button-variant-back user-analytics-history-toggle"
-          onClick={() => setShowHistoryList((value) => !value)}
+          onClick={() => setShowHistoryList((v) => !v)}
           disabled={isLoading || history.length === 0}
         >
           {showHistoryList ? "Hide History" : "History"}
@@ -94,75 +84,83 @@ export default function UserAnalyticsCard({
       </div>
 
       {!showHistoryList ? (
-        <div className="user-analytics-visual-box">
-        <h3>Swipe Through Trials</h3>
-        {isLoading ? (
-          <div className="user-analytics-history-skeleton" aria-hidden="true">
-            <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-wide" />
-            <div className="skeleton skeleton-line user-analytics-history-skeleton-line" />
-            <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-short" />
-          </div>
-        ) : !currentHistoryItem || !currentHistoryItem.trial ? (
-          <p className="history-empty">No apply/skip history yet.</p>
-        ) : (
-          <div
-            className="user-analytics-history-card"
-            aria-label="Swipable history card"
-            {...swipeActions}
-          >
-            <div className="user-analytics-history-card-topline">
-              <span className="user-analytics-history-card-pill">
-                {formatAction(currentHistoryItem.action)}
-              </span>
-              <span className="user-analytics-history-card-counter">
-                {activeHistoryIndex + 1} / {historyTrials.length}
-              </span>
-            </div>
+        <div className="user-analytics-visual-area">
+          <div className="user-analytics-visual-box">
+            <h3>Swipe Through Trials</h3>
 
-            <h4 className="user-analytics-history-card-title">
-              {currentHistoryItem.trial.title}
-            </h4>
+            {isLoading ? (
+              <div
+                className="user-analytics-history-skeleton"
+                aria-hidden="true"
+              >
+                <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-wide" />
+                <div className="skeleton skeleton-line user-analytics-history-skeleton-line" />
+                <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-short" />
+              </div>
+            ) : !currentHistoryItem || !currentHistoryItem.trial ? (
+              <p className="history-empty">No apply/skip history yet.</p>
+            ) : (
+              <div
+                className="user-analytics-history-card"
+                aria-label="Swipable history card"
+                {...swipeActions}
+              >
+                <div className="user-analytics-history-card-topline">
+                  <span className="user-analytics-history-card-pill">
+                    {formatAction(currentHistoryItem.action)}
+                  </span>
+                  <span className="user-analytics-history-card-counter">
+                    {activeHistoryIndex + 1} / {historyTrials.length}
+                  </span>
+                </div>
 
-            <p className="user-analytics-history-card-meta">
-              {formatDate(currentHistoryItem.created_at)}
-            </p>
+                <h4 className="user-analytics-history-card-title">
+                  {currentHistoryItem.trial.title}
+                </h4>
 
-            <div className="user-analytics-history-card-summary">
-              {currentHistoryItem.trial.match_reasons &&
-              currentHistoryItem.trial.match_reasons.length > 0 ? (
-                <p>
-                  Match reasons: {currentHistoryItem.trial.match_reasons.join(
-                    ", ",
-                  )}
+                <p className="user-analytics-history-card-meta">
+                  {formatDate(currentHistoryItem.created_at)}
                 </p>
-              ) : null}
 
-              <p>
-                {currentHistoryItem.trial.condition} • {currentHistoryItem.trial.location}
-              </p>
-            </div>
+                <div className="user-analytics-history-card-summary">
+                  {currentHistoryItem.trial.match_reasons &&
+                  currentHistoryItem.trial.match_reasons.length > 0 ? (
+                    <p>
+                      Match reasons:{" "}
+                      {currentHistoryItem.trial.match_reasons.join(", ")}
+                    </p>
+                  ) : null}
 
-            <button
-              type="button"
-              className="atlas-button atlas-button-variant-3 user-analytics-history-reopen"
-              onClick={() => onNavigateHistoryTrial(currentHistoryItem.trial!.id)}
-            >
-              Reopen Trial
-            </button>
+                  <p>
+                    {currentHistoryItem.trial.condition} •{" "}
+                    {currentHistoryItem.trial.location}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="atlas-button atlas-button-variant-3 user-analytics-history-reopen"
+                  onClick={() =>
+                    onNavigateHistoryTrial(currentHistoryItem.trial!.id)
+                  }
+                >
+                  Reopen Trial
+                </button>
+              </div>
+            )}
           </div>
-        )}
 
-          <div className="user-analytics-history-arrows">
-          <Arrows
-            onPrevious={() => {
-              setActiveHistoryIndex((index) => Math.max(index - 1, 0));
-            }}
-            onNext={() => {
-              setActiveHistoryIndex((index) =>
-                Math.min(index + 1, Math.max(historyTrials.length - 1, 0)),
-              );
-            }}
-          />
+          <div className="user-analytics-history-arrows-outside">
+            <Arrows
+              onPrevious={() =>
+                setActiveHistoryIndex((i) => Math.max(i - 1, 0))
+              }
+              onNext={() =>
+                setActiveHistoryIndex((i) =>
+                  Math.min(i + 1, Math.max(historyTrials.length - 1, 0)),
+                )
+              }
+            />
           </div>
         </div>
       ) : null}
@@ -170,6 +168,7 @@ export default function UserAnalyticsCard({
       {showHistoryList ? (
         <div className="user-analytics-history-panel">
           <h3 className="user-analytics-history-panel-title">Swipe History</h3>
+
           {isLoading ? (
             <div className="user-analytics-details-skeleton" aria-hidden="true">
               <div className="skeleton skeleton-line user-analytics-detail-skeleton-line" />
@@ -215,6 +214,7 @@ export default function UserAnalyticsCard({
                   Top Category: {topCategory ? topCategory[0] : "None yet"}
                 </span>
               </div>
+
               <div className="user-analytics-detail-row">
                 <span className="user-analytics-detail-label">
                   Drop-off Rate: {stats.drop_off_rate}%
@@ -243,7 +243,8 @@ export default function UserAnalyticsCard({
                   <div>
                     <strong>{item.trial?.title ?? "Trial unavailable"}</strong>
                     <span>
-                      {formatAction(item.action)} • {formatDate(item.created_at)}
+                      {formatAction(item.action)} •{" "}
+                      {formatDate(item.created_at)}
                     </span>
                   </div>
                   {item.trial ? (

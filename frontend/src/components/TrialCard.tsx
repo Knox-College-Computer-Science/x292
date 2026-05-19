@@ -50,11 +50,15 @@ export default function TrialCard({
         <div className="trial-details-panel">
           <div className="trial-detail-row">
             <span className="trial-detail-label">Study Type</span>
-            <span className="trial-detail-value">{trial.study_type ?? "Not listed"}</span>
+            <span className="trial-detail-value">
+              {trial.study_type ?? "Not listed"}
+            </span>
           </div>
           <div className="trial-detail-row">
             <span className="trial-detail-label">Recruitment</span>
-            <span className="trial-detail-value">{trial.recruitment_status}</span>
+            <span className="trial-detail-value">
+              {trial.recruitment_status}
+            </span>
           </div>
           <div className="trial-detail-row">
             <span className="trial-detail-label">Location</span>
@@ -68,7 +72,9 @@ export default function TrialCard({
           </div>
           <div className="trial-detail-row">
             <span className="trial-detail-label">Phase</span>
-            <span className="trial-detail-value">{trial.study_phase ?? "Not listed"}</span>
+            <span className="trial-detail-value">
+              {trial.study_phase ?? "Not listed"}
+            </span>
           </div>
           <div className="trial-detail-row">
             <span className="trial-detail-label">Participation</span>

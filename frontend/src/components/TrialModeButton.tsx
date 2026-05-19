@@ -3,7 +3,10 @@ type TrialModeButtonProps = {
   onClick: () => void;
 };
 
-export default function TrialModeButton({ mode, onClick }: TrialModeButtonProps) {
+export default function TrialModeButton({
+  mode,
+  onClick,
+}: TrialModeButtonProps) {
   const label = mode === "all" ? "All Trials" : "Swipe Trials";
 
   return (
