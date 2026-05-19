@@ -195,7 +195,11 @@ class MatcherTests(unittest.TestCase):
         self.assertEqual(score, 90)
         self.assertEqual(
             reasons,
-            ["condition match", "location match", "actively recruiting"],
+            [
+                "Matches your health conditions",
+                "Near your preferred location",
+                "Currently recruiting",
+            ],
         )
 
     def test_score_from_metrics_includes_profile_preference_signals(self):
@@ -215,11 +219,11 @@ class MatcherTests(unittest.TestCase):
         self.assertEqual(
             reasons,
             [
-                "condition match",
-                "actively recruiting",
-                "age range compatible",
-                "preferred phase",
-                "compensation available",
+                "Matches your health conditions",
+                "Currently recruiting",
+                "Fits your age range",
+                "Matches your preferred study phase",
+                "Offers compensation",
             ],
         )
 
@@ -294,9 +298,9 @@ class MatcherTests(unittest.TestCase):
         score, reasons = matcher.score_trial(self.db_session, user.id, saved_trial)
 
         self.assertEqual(score, 100)
-        self.assertIn("age range compatible", reasons)
-        self.assertIn("preferred phase", reasons)
-        self.assertIn("compensation available", reasons)
+        self.assertIn("Fits your age range", reasons)
+        self.assertIn("Matches your preferred study phase", reasons)
+        self.assertIn("Offers compensation", reasons)
 
     def test_match_trials_ranks_best_remaining_trial_and_skips_saved_or_passed(self):
         user = create_user_with_profile(self.db_session)
@@ -365,10 +369,10 @@ class MatcherTests(unittest.TestCase):
         self.assertEqual(
             reasons,
             [
-                "condition match",
-                "location match",
-                "actively recruiting",
-                "remote eligible",
+                "Matches your health conditions",
+                "Near your preferred location",
+                "Currently recruiting",
+                "Supports remote participation",
             ],
         )
 

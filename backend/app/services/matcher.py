@@ -136,31 +136,31 @@ def _score_from_metrics(metrics: Dict[str, int]) -> Tuple[float, List[str]]:
 
     if metrics.get("condition"):
         score += 40
-        reasons.append("condition match")
+        reasons.append("Matches your health conditions")
 
     if metrics.get("location"):
         score += 30
-        reasons.append("location match")
+        reasons.append("Near your preferred location")
 
     if metrics.get("recruiting"):
         score += 20
-        reasons.append("actively recruiting")
+        reasons.append("Currently recruiting")
 
     if metrics.get("remote"):
         score += 10
-        reasons.append("remote eligible")
+        reasons.append("Supports remote participation")
 
     if metrics.get("age"):
         score += 10
-        reasons.append("age range compatible")
+        reasons.append("Fits your age range")
 
     if metrics.get("phase"):
         score += 10
-        reasons.append("preferred phase")
+        reasons.append("Matches your preferred study phase")
 
     if metrics.get("compensation"):
         score += 10
-        reasons.append("compensation available")
+        reasons.append("Offers compensation")
 
     return min(score, 100), reasons
 
