@@ -628,6 +628,7 @@ export default function App() {
         onNavigateProfile={() => setView("profile")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
+        onNavigateFindTrials={() => setView("trials")}
         onNavigateMoreDetails={(trialId) => {
           setSelectedTrialId(trialId);
           setView("trial-more-details");

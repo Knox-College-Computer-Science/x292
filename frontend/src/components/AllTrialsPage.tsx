@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { getMySavedTrials, listTrials, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
+import TrialModeButton from "./TrialModeButton";
 import "./AllTrialsPage.css";
 
 type AllTrialsPageProps = {
@@ -190,6 +191,9 @@ export default function AllTrialsPage({
             Apply filters
           </button>
 
+        </form>
+
+        <div className="all-trials-filter-actions">
           <button
             type="button"
             className="atlas-button atlas-button-variant-back"
@@ -197,7 +201,9 @@ export default function AllTrialsPage({
           >
             {showSavedOnly ? "Show all" : "Saved only"}
           </button>
-        </form>
+
+          <TrialModeButton mode="swipe" onClick={onNavigateFindTrials} />
+        </div>
 
         <div className="all-trials-up-next">
           <div className="all-trials-up-next-header">Up Next</div>

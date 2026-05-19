@@ -11,6 +11,7 @@ type TrialPageProps = {
   onNavigateProfile: () => void;
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
+  onNavigateFindTrials: () => void;
   onNavigateMoreDetails: (trialId: string) => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
@@ -198,6 +199,16 @@ export default function TrialPage({
             Refresh cards
           </button>
         </form>
+
+        <div className="trial-filter-actions">
+          <button
+            type="button"
+            className="atlas-button atlas-button-variant-back"
+            onClick={onNavigateAllTrials}
+          >
+            All Trials
+          </button>
+        </div>
 
         {loading ? (
           <div className="trial-card-skeleton" aria-hidden="true">

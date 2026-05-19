@@ -1,5 +1,8 @@
-﻿import type { InteractionHistoryItem, TrialAnalyticsStats } from "../api";
+﻿import { useEffect, useMemo, useState } from "react";
+import type { InteractionHistoryItem, TrialAnalyticsStats } from "../api";
+import Arrows from "./Arrows";
 import "./UserAnalyticsCard.css";
+import useSwipeActions from "./useSwipeActions";
 
 type UserAnalyticsCardProps = {
   stats: TrialAnalyticsStats | null;
@@ -36,7 +39,35 @@ export default function UserAnalyticsCard({
   onNavigateMoreDetails,
   onNavigateHistoryTrial,
 }: UserAnalyticsCardProps) {
+  const [activeHistoryIndex, setActiveHistoryIndex] = useState(0);
+  const [showHistoryList, setShowHistoryList] = useState(false);
+
   const topTrial = stats?.top_trials[0];
+
+  const historyTrials = useMemo(
+    () => history.filter((item) => item.trial),
+    [history],
+  );
+
+  const currentHistoryItem =
+    historyTrials[activeHistoryIndex] ?? historyTrials[0] ?? null;
+
+  useEffect(() => {
+    if (activeHistoryIndex >= historyTrials.length) {
+      setActiveHistoryIndex(0);
+    }
+  }, [activeHistoryIndex, historyTrials.length]);
+
+  const swipeActions = useSwipeActions({
+    onSwipeLeft: () => {
+      setActiveHistoryIndex((index) =>
+        Math.min(index + 1, Math.max(historyTrials.length - 1, 0)),
+      );
+    },
+    onSwipeRight: () => {
+      setActiveHistoryIndex((index) => Math.max(index - 1, 0));
+    },
+  });
 
   const topCategory = stats
     ? Object.entries(stats.category_popularity).sort((a, b) => b[1] - a[1])[0]
@@ -45,50 +76,100 @@ export default function UserAnalyticsCard({
   return (
     <section
       className="user-analytics-card"
-      aria-label="User analytics details"
+      aria-label="User analytics details. Swipe left or right through trials."
     >
-      <h2 className="user-analytics-card-title">
-        Matcher Analytics + Swipe History
-      </h2>
+      <div className="user-analytics-card-header">
+        <h2 className="user-analytics-card-title">
+          Matcher Analytics + Swipe History
+        </h2>
 
-      <div className="user-analytics-card-grid">
+        <button
+          type="button"
+          className="atlas-button atlas-button-variant-back user-analytics-history-toggle"
+          onClick={() => setShowHistoryList((value) => !value)}
+          disabled={isLoading || history.length === 0}
+        >
+          {showHistoryList ? "Hide History" : "History"}
+        </button>
+      </div>
+
+      {!showHistoryList ? (
         <div className="user-analytics-visual-box">
-          <h3>Swipe History</h3>
-          {isLoading ? (
-            <div className="user-analytics-history-skeleton" aria-hidden="true">
-              <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-wide" />
-              <div className="skeleton skeleton-line user-analytics-history-skeleton-line" />
-              <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-short" />
+        <h3>Swipe Through Trials</h3>
+        {isLoading ? (
+          <div className="user-analytics-history-skeleton" aria-hidden="true">
+            <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-wide" />
+            <div className="skeleton skeleton-line user-analytics-history-skeleton-line" />
+            <div className="skeleton skeleton-line user-analytics-history-skeleton-line user-analytics-history-skeleton-line-short" />
+          </div>
+        ) : !currentHistoryItem || !currentHistoryItem.trial ? (
+          <p className="history-empty">No apply/skip history yet.</p>
+        ) : (
+          <div
+            className="user-analytics-history-card"
+            aria-label="Swipable history card"
+            {...swipeActions}
+          >
+            <div className="user-analytics-history-card-topline">
+              <span className="user-analytics-history-card-pill">
+                {formatAction(currentHistoryItem.action)}
+              </span>
+              <span className="user-analytics-history-card-counter">
+                {activeHistoryIndex + 1} / {historyTrials.length}
+              </span>
             </div>
-          ) : history.length === 0 ? (
-            <p className="history-empty">No apply/skip history yet.</p>
-          ) : (
-            <ul className="history-list">
-              {history.slice(0, 10).map((item) => (
-                <li key={item.interaction_id}>
-                  <div>
-                    <strong>{item.trial?.title ?? "Trial unavailable"}</strong>
-                    <span>
-                      {formatAction(item.action)} •{" "}
-                      {formatDate(item.created_at)}
-                    </span>
-                  </div>
-                  {item.trial ? (
-                    <button
-                      type="button"
-                      className="atlas-button atlas-button-variant-back history-open-btn"
-                      onClick={() => onNavigateHistoryTrial(item.trial!.id)}
-                    >
-                      Reopen
-                    </button>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
 
-        <div className="user-analytics-details-panel">
+            <h4 className="user-analytics-history-card-title">
+              {currentHistoryItem.trial.title}
+            </h4>
+
+            <p className="user-analytics-history-card-meta">
+              {formatDate(currentHistoryItem.created_at)}
+            </p>
+
+            <div className="user-analytics-history-card-summary">
+              {currentHistoryItem.trial.match_reasons &&
+              currentHistoryItem.trial.match_reasons.length > 0 ? (
+                <p>
+                  Match reasons: {currentHistoryItem.trial.match_reasons.join(
+                    ", ",
+                  )}
+                </p>
+              ) : null}
+
+              <p>
+                {currentHistoryItem.trial.condition} • {currentHistoryItem.trial.location}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="atlas-button atlas-button-variant-3 user-analytics-history-reopen"
+              onClick={() => onNavigateHistoryTrial(currentHistoryItem.trial!.id)}
+            >
+              Reopen Trial
+            </button>
+          </div>
+        )}
+
+          <div className="user-analytics-history-arrows">
+          <Arrows
+            onPrevious={() => {
+              setActiveHistoryIndex((index) => Math.max(index - 1, 0));
+            }}
+            onNext={() => {
+              setActiveHistoryIndex((index) =>
+                Math.min(index + 1, Math.max(historyTrials.length - 1, 0)),
+              );
+            }}
+          />
+          </div>
+        </div>
+      ) : null}
+
+      {showHistoryList ? (
+        <div className="user-analytics-history-panel">
+          <h3 className="user-analytics-history-panel-title">Swipe History</h3>
           {isLoading ? (
             <div className="user-analytics-details-skeleton" aria-hidden="true">
               <div className="skeleton skeleton-line user-analytics-detail-skeleton-line" />
@@ -139,21 +220,47 @@ export default function UserAnalyticsCard({
                   Drop-off Rate: {stats.drop_off_rate}%
                 </span>
               </div>
+
+              <div className="user-analytics-actions-row">
+                <button
+                  type="button"
+                  className="atlas-button atlas-button-variant-1 user-analytics-more-info-button"
+                  onClick={onNavigateMoreDetails}
+                  disabled={isLoading || !stats || Boolean(error)}
+                >
+                  More Info
+                </button>
+              </div>
             </>
           ) : null}
 
-          <div className="user-analytics-actions-row">
-            <button
-              type="button"
-              className="atlas-button atlas-button-variant-1 user-analytics-more-info-button"
-              onClick={onNavigateMoreDetails}
-              disabled={isLoading || !stats || Boolean(error)}
-            >
-              More Info
-            </button>
-          </div>
+          {history.length === 0 ? (
+            <p className="history-empty">No apply/skip history yet.</p>
+          ) : (
+            <ul className="history-list">
+              {history.slice(0, 10).map((item) => (
+                <li key={item.interaction_id}>
+                  <div>
+                    <strong>{item.trial?.title ?? "Trial unavailable"}</strong>
+                    <span>
+                      {formatAction(item.action)} • {formatDate(item.created_at)}
+                    </span>
+                  </div>
+                  {item.trial ? (
+                    <button
+                      type="button"
+                      className="atlas-button atlas-button-variant-back history-open-btn"
+                      onClick={() => onNavigateHistoryTrial(item.trial!.id)}
+                    >
+                      Reopen
+                    </button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }

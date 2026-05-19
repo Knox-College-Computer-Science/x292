@@ -1,5 +1,6 @@
 ﻿import type { Trial } from "../api";
 import "./TrialCard.css";
+import useSwipeActions from "./useSwipeActions";
 
 type TrialCardProps = {
   trial: Trial;
@@ -18,8 +19,17 @@ export default function TrialCard({
   onApply,
   onSkip,
 }: TrialCardProps) {
+  const swipeActions = useSwipeActions({
+    onSwipeLeft: onSkip,
+    onSwipeRight: onApply,
+  });
+
   return (
-    <section className="trial-card" aria-label="Trial details">
+    <section
+      className="trial-card"
+      aria-label="Trial details. Swipe left to skip or swipe right to apply."
+      {...swipeActions}
+    >
       <div className="trial-card-header-row">
         <h2 className="trial-card-title">{trial.title}</h2>
         <span className="trial-card-counter">

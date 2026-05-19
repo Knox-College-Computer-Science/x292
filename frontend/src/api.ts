@@ -126,6 +126,7 @@ export type TrialQuery = {
   phase?: string;
   participation?: string;
   requiresCompensation?: boolean;
+  limit?: number;
 };
 
 export type TrialAnalyticsStats = {
@@ -218,6 +219,9 @@ export function listTrials(query: TrialQuery, token?: string) {
   }
   if (query.requiresCompensation) {
     params.set("requires_compensation", "true");
+  }
+  if (typeof query.limit === "number") {
+    params.set("limit", String(query.limit));
   }
 
   return request<Trial[]>(`/trials/?${params.toString()}`, undefined, { token });

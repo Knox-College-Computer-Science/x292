@@ -7,6 +7,8 @@
     linear-gradient(var(--clinic-overlay), var(--clinic-overlay)),
     var(--accent-color);
   color: var(--on-brand);
+  touch-action: pan-y;
+  cursor: grab;
 }
 
 .clinic-analytics-card-title {
