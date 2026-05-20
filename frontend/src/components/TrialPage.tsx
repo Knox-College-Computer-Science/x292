@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { listTrials, passTrial, saveTrial, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
 import TrialCard from "./TrialCard";
@@ -31,6 +31,8 @@ export default function TrialPage({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [appliedSearch, setAppliedSearch] = useState("diabetes");
+  const latestLoadId = useRef(0);
 
   const [condition, setCondition] = useState("diabetes");
   const [location, setLocation] = useState("");
@@ -40,6 +42,9 @@ export default function TrialPage({
   const [requiresCompensation, setRequiresCompensation] = useState(false);
 
   async function loadTrials() {
+    const loadId = latestLoadId.current + 1;
+    latestLoadId.current = loadId;
+
     try {
       setLoading(true);
       setError(null);
@@ -47,6 +52,7 @@ export default function TrialPage({
 
       const normalizedParticipation =
         participation === "Either" ? undefined : participation;
+      const queryCondition = condition.trim() || "your profile";
 
       const data = await listTrials(
         {
@@ -60,9 +66,18 @@ export default function TrialPage({
         authToken,
       );
 
+      if (loadId !== latestLoadId.current) {
+        return;
+      }
+
       setTrials(data);
       setCurrentIndex(0);
+      setAppliedSearch(queryCondition);
     } catch (err) {
+      if (loadId !== latestLoadId.current) {
+        return;
+      }
+
       setError(
         err instanceof Error
           ? err.message
@@ -71,7 +86,9 @@ export default function TrialPage({
       setTrials([]);
       setCurrentIndex(0);
     } finally {
-      setLoading(false);
+      if (loadId === latestLoadId.current) {
+        setLoading(false);
+      }
     }
   }
 
@@ -195,12 +212,20 @@ export default function TrialPage({
             Compensation only
           </label>
 
-          <button type="submit" className="atlas-button atlas-button-variant-3">
-            Refresh cards
+          <button
+            type="submit"
+            className="atlas-button atlas-button-variant-3"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Refresh cards"}
           </button>
         </form>
 
         <div className="trial-filter-actions">
+          <span className="trial-results-summary">
+            Showing {trials.length} {trials.length === 1 ? "card" : "cards"} for{" "}
+            {appliedSearch}
+          </span>
           <button
             type="button"
             className="atlas-button atlas-button-variant-back"
@@ -252,9 +277,10 @@ export default function TrialPage({
             <button
               type="button"
               className="atlas-button atlas-button-variant-3"
+              disabled={loading}
               onClick={() => void loadTrials()}
             >
-              Reload cards
+              {loading ? "Loading..." : "Reload cards"}
             </button>
           </div>
         ) : null}
