@@ -1,5 +1,6 @@
 ﻿import type { Trial } from "../api";
 import "./TrialCard.css";
+import Tooltip from "./Tooltip";
 import useSwipeActions from "./useSwipeActions";
 
 type TrialCardProps = {
@@ -41,9 +42,13 @@ export default function TrialCard({
         <div className="trial-visual-box">
           <p className="trial-visual-condition">{trial.condition}</p>
           {trial.match_reasons && trial.match_reasons.length > 0 ? (
-            <p className="trial-match-reasons">
-              Match reasons: {trial.match_reasons.join(", ")}
-            </p>
+            <Tooltip
+              label={`This trial matches your profile based on: ${trial.match_reasons.join(", ")}`}
+            >
+              <p className="trial-match-reasons">
+                Match reasons: {trial.match_reasons.join(", ")}
+              </p>
+            </Tooltip>
           ) : null}
         </div>
 
@@ -84,27 +89,35 @@ export default function TrialCard({
           </div>
 
           <div className="trial-actions-row">
-            <button
-              type="button"
-              className="atlas-button atlas-button-variant-1 trial-more-info-button"
-              onClick={onNavigateMoreDetails}
-            >
-              View Trial
-            </button>
-            <button
-              type="button"
-              className="atlas-button atlas-button-variant-3"
-              onClick={onApply}
-            >
-              Apply
-            </button>
-            <button
-              type="button"
-              className="atlas-button atlas-button-variant-back"
-              onClick={onSkip}
-            >
-              Skip
-            </button>
+            <Tooltip label="See full eligibility, timeline, and contact details">
+              <button
+                type="button"
+                className="atlas-button atlas-button-variant-1 trial-more-info-button"
+                onClick={onNavigateMoreDetails}
+              >
+                View Trial
+              </button>
+            </Tooltip>
+
+            <Tooltip label="Add this trial to your applications and get notified of updates">
+              <button
+                type="button"
+                className="atlas-button atlas-button-variant-3"
+                onClick={onApply}
+              >
+                Apply
+              </button>
+            </Tooltip>
+
+            <Tooltip label="Mark as not interested—find it again anytime in your history">
+              <button
+                type="button"
+                className="atlas-button atlas-button-variant-back"
+                onClick={onSkip}
+              >
+                Skip
+              </button>
+            </Tooltip>
           </div>
         </div>
       </div>

@@ -3,6 +3,8 @@ type TrialModeButtonProps = {
   onClick: () => void;
 };
 
+import Tooltip from "./Tooltip";
+
 export default function TrialModeButton({
   mode,
   onClick,
@@ -10,12 +12,20 @@ export default function TrialModeButton({
   const label = mode === "all" ? "All Trials" : "Swipe Trials";
 
   return (
-    <button
-      type="button"
-      className="atlas-button atlas-button-variant-3 trial-mode-button"
-      onClick={onClick}
+    <Tooltip
+      label={
+        mode === "all"
+          ? "Browse all trials"
+          : "Switch to swipe mode for one trial at a time"
+      }
     >
-      {label}
-    </button>
+      <button
+        type="button"
+        className="atlas-button atlas-button-variant-3 trial-mode-button"
+        onClick={onClick}
+      >
+        {label}
+      </button>
+    </Tooltip>
   );
 }

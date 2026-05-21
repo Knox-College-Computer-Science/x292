@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { InteractionHistoryItem, TrialAnalyticsStats } from "../api";
 import Arrows from "./Arrows";
+import Tooltip from "./Tooltip";
 import "./UserAnalyticsCard.css";
 import useSwipeActions from "./useSwipeActions";
 
@@ -73,14 +74,18 @@ export default function UserAnalyticsCard({
           Matcher Analytics + Swipe History
         </h2>
 
-        <button
-          type="button"
-          className="atlas-button atlas-button-variant-back user-analytics-history-toggle"
-          onClick={() => setShowHistoryList((v) => !v)}
-          disabled={isLoading || history.length === 0}
+        <Tooltip
+          label={showHistoryList ? "Hide history list" : "Show history list"}
         >
-          {showHistoryList ? "Hide History" : "History"}
-        </button>
+          <button
+            type="button"
+            className="atlas-button atlas-button-variant-back user-analytics-history-toggle"
+            onClick={() => setShowHistoryList((v) => !v)}
+            disabled={isLoading || history.length === 0}
+          >
+            {showHistoryList ? "Hide History" : "History"}
+          </button>
+        </Tooltip>
       </div>
 
       {!showHistoryList ? (
@@ -137,15 +142,17 @@ export default function UserAnalyticsCard({
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  className="atlas-button atlas-button-variant-3 user-analytics-history-reopen"
-                  onClick={() =>
-                    onNavigateHistoryTrial(currentHistoryItem.trial!.id)
-                  }
-                >
-                  Reopen Trial
-                </button>
+                <Tooltip label="Open trial details for this history item">
+                  <button
+                    type="button"
+                    className="atlas-button atlas-button-variant-3 user-analytics-history-reopen"
+                    onClick={() =>
+                      onNavigateHistoryTrial(currentHistoryItem.trial!.id)
+                    }
+                  >
+                    Reopen Trial
+                  </button>
+                </Tooltip>
               </div>
             )}
           </div>
@@ -222,14 +229,16 @@ export default function UserAnalyticsCard({
               </div>
 
               <div className="user-analytics-actions-row">
-                <button
-                  type="button"
-                  className="atlas-button atlas-button-variant-1 user-analytics-more-info-button"
-                  onClick={onNavigateMoreDetails}
-                  disabled={isLoading || !stats || Boolean(error)}
-                >
-                  More Info
-                </button>
+                <Tooltip label="View more analytics and trial details">
+                  <button
+                    type="button"
+                    className="atlas-button atlas-button-variant-1 user-analytics-more-info-button"
+                    onClick={onNavigateMoreDetails}
+                    disabled={isLoading || !stats || Boolean(error)}
+                  >
+                    More Info
+                  </button>
+                </Tooltip>
               </div>
             </>
           ) : null}
@@ -248,13 +257,15 @@ export default function UserAnalyticsCard({
                     </span>
                   </div>
                   {item.trial ? (
-                    <button
-                      type="button"
-                      className="atlas-button atlas-button-variant-back history-open-btn"
-                      onClick={() => onNavigateHistoryTrial(item.trial!.id)}
-                    >
-                      Reopen
-                    </button>
+                    <Tooltip label="Open trial details for this history item">
+                      <button
+                        type="button"
+                        className="atlas-button atlas-button-variant-back history-open-btn"
+                        onClick={() => onNavigateHistoryTrial(item.trial!.id)}
+                      >
+                        Reopen
+                      </button>
+                    </Tooltip>
                   ) : null}
                 </li>
               ))}
