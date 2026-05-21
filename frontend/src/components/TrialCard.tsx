@@ -13,11 +13,7 @@ type TrialCardProps = {
   onSkip: () => void;
 };
 
-function formatMatchRating(score: number | null | undefined) {
-  if (typeof score !== "number") {
-    return "N/A";
-  }
-
+function formatMatchRating(score: number) {
   return `${Math.round(score)}%`;
 }
 
@@ -43,7 +39,9 @@ export default function TrialCard({
       <div className="trial-card-header-row">
         <h2 className="trial-card-title">{trial.title}</h2>
         <div className="trial-card-header-meta">
-          <TrialRating value={formatMatchRating(trial.match_score)} />
+          {typeof trial.match_score === "number" ? (
+            <TrialRating value={formatMatchRating(trial.match_score)} />
+          ) : null}
           <span className="trial-card-counter">
             Card {currentIndex + 1} / {total}
           </span>

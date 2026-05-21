@@ -17,11 +17,7 @@ type TrialMoreDetailsPageProps = {
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-function formatMatchRating(score: number | null | undefined) {
-  if (typeof score !== "number") {
-    return "N/A";
-  }
-
+function formatMatchRating(score: number) {
   return `${Math.round(score)}%`;
 }
 
@@ -151,7 +147,9 @@ export default function TrialMoreDetailsPage({
                     : "No match reasons available yet."}
                 </p>
               </div>
-              <TrialRating value={formatMatchRating(trial.match_score)} />
+              {typeof trial.match_score === "number" ? (
+                <TrialRating value={formatMatchRating(trial.match_score)} />
+              ) : null}
             </div>
 
             <TextBox

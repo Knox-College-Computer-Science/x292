@@ -34,11 +34,7 @@ function formatDate(iso: string) {
   }).format(parsed);
 }
 
-function formatMatchRating(score: number | null | undefined) {
-  if (typeof score !== "number") {
-    return "N/A";
-  }
-
+function formatMatchRating(score: number) {
   return `${Math.round(score)}%`;
 }
 
@@ -110,7 +106,9 @@ export default function UserAnalyticsCard({
           <div className="user-analytics-visual-box">
             <div className="user-analytics-visual-heading">
               <h3>Swipe Through Trials</h3>
-              <TrialRating value={formatMatchRating(currentTrial?.match_score)} />
+              {typeof currentTrial?.match_score === "number" ? (
+                <TrialRating value={formatMatchRating(currentTrial.match_score)} />
+              ) : null}
             </div>
 
             {isLoading ? (

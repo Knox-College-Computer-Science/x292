@@ -177,9 +177,9 @@ export default function AllTrialsPage({
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
               >
+                <option value="">Any</option>
                 <option value="Recruiting">Recruiting</option>
                 <option value="Not yet recruiting">Not yet recruiting</option>
-                <option value="">Any</option>
               </select>
             </Tooltip>
           </label>

@@ -33,12 +33,12 @@ export default function TrialPage({
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [appliedSearch, setAppliedSearch] = useState("diabetes");
-  const [appliedStatus, setAppliedStatus] = useState("Recruiting");
+  const [appliedStatus, setAppliedStatus] = useState("");
   const latestLoadId = useRef(0);
 
   const [condition, setCondition] = useState("diabetes");
   const [location, setLocation] = useState("");
-  const [status, setStatus] = useState("Recruiting");
+  const [status, setStatus] = useState("");
   const [phase, setPhase] = useState("");
   const [participation, setParticipation] = useState("Either");
   const [requiresCompensation, setRequiresCompensation] = useState(false);
@@ -111,6 +111,8 @@ export default function TrialPage({
     : "";
   const shouldShowStatusHint =
     !loading && !error && appliedStatus === "Recruiting" && trials.length <= 1;
+  const isEmptySearch =
+    error?.toLowerCase().includes("no trials matched") ?? false;
 
   async function handleAction(action: "save" | "pass") {
     if (!currentTrial) {
@@ -186,9 +188,9 @@ export default function TrialPage({
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
               >
+                <option value="">Any</option>
                 <option value="Recruiting">Recruiting</option>
                 <option value="Not yet recruiting">Not yet recruiting</option>
-                <option value="">Any</option>
               </select>
             </Tooltip>
           </label>
@@ -283,15 +285,22 @@ export default function TrialPage({
         ) : null}
         {error ? (
           <div
-            className="state-card state-card-error trial-error-card"
+            className={`state-card ${isEmptySearch ? "" : "state-card-error"} trial-error-card`}
             role="alert"
           >
-            <p className="state-card-title">Could not load matcher cards</p>
+            <p className="state-card-title">
+              {isEmptySearch ? "No trials found" : "Could not load matcher cards"}
+            </p>
             <p className="state-card-message">{error}</p>
             {appliedStatus === "Recruiting" ? (
               <p className="state-card-message">
                 Try Status: Any if the condition has older or non-recruiting
                 trial records.
+              </p>
+            ) : null}
+            {isEmptySearch ? (
+              <p className="state-card-message">
+                Try a broader condition like cancer, diabetes, or pneumonia.
               </p>
             ) : null}
           </div>
