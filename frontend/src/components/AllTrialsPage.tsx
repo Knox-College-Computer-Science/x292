@@ -1,6 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { getMySavedTrials, listTrials, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
+import Tooltip from "./Tooltip";
+import TrialModeButton from "./TrialModeButton";
 import "./AllTrialsPage.css";
 
 type AllTrialsPageProps = {
@@ -121,75 +123,94 @@ export default function AllTrialsPage({
         >
           <label>
             Condition
-            <input
-              value={condition}
-              onChange={(event) => setCondition(event.target.value)}
-              placeholder="e.g. diabetes"
-            />
+            <Tooltip label="Search by condition name (e.g., 'diabetes', 'cancer')">
+              <input
+                value={condition}
+                onChange={(event) => setCondition(event.target.value)}
+                placeholder="e.g. diabetes"
+              />
+            </Tooltip>
           </label>
 
           <label>
             Location
-            <input
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              placeholder="City, State"
-            />
+            <Tooltip label="Enter city and state (e.g., 'Boston, MA') or leave blank for any location">
+              <input
+                value={location}
+                onChange={(event) => setLocation(event.target.value)}
+                placeholder="City, State"
+              />
+            </Tooltip>
           </label>
 
           <label>
             Status
-            <select
-              value={status}
-              onChange={(event) => setStatus(event.target.value)}
-            >
-              <option value="Recruiting">Recruiting</option>
-              <option value="Not yet recruiting">Not yet recruiting</option>
-              <option value="">Any</option>
-            </select>
+            <Tooltip label="Recruiting = actively enrolling participants now">
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+              >
+                <option value="Recruiting">Recruiting</option>
+                <option value="Not yet recruiting">Not yet recruiting</option>
+                <option value="">Any</option>
+              </select>
+            </Tooltip>
           </label>
 
           <label>
             Study Phase
-            <select
-              value={phase}
-              onChange={(event) => setPhase(event.target.value)}
-            >
-              <option value="">Any</option>
-              <option value="Phase 1">Phase 1</option>
-              <option value="Phase 2">Phase 2</option>
-              <option value="Phase 3">Phase 3</option>
-              <option value="Phase 4">Phase 4</option>
-            </select>
+            <Tooltip label="Phase 1: Safety | Phase 2: Efficacy | Phase 3: Effectiveness | Phase 4: Long-term follow-up">
+              <select
+                value={phase}
+                onChange={(event) => setPhase(event.target.value)}
+              >
+                <option value="">Any</option>
+                <option value="Phase 1">Phase 1</option>
+                <option value="Phase 2">Phase 2</option>
+                <option value="Phase 3">Phase 3</option>
+                <option value="Phase 4">Phase 4</option>
+              </select>
+            </Tooltip>
           </label>
 
           <label>
             Participation
-            <select
-              value={participation}
-              onChange={(event) => setParticipation(event.target.value)}
-            >
-              <option value="Either">Either</option>
-              <option value="Remote">Remote</option>
-              <option value="In-person">In-person</option>
-            </select>
+            <Tooltip label="'Either' means you're open to both remote and in-person trials">
+              <select
+                value={participation}
+                onChange={(event) => setParticipation(event.target.value)}
+              >
+                <option value="Either">Either</option>
+                <option value="Remote">Remote</option>
+                <option value="In-person">In-person</option>
+              </select>
+            </Tooltip>
           </label>
 
           <label className="all-trials-checkbox">
-            <input
-              type="checkbox"
-              checked={requiresCompensation}
-              onChange={(event) =>
-                setRequiresCompensation(event.target.checked)
-              }
-            />
+            <Tooltip label="Check to show only trials offering payment or incentives">
+              <input
+                type="checkbox"
+                checked={requiresCompensation}
+                onChange={(event) =>
+                  setRequiresCompensation(event.target.checked)
+                }
+              />
+            </Tooltip>
             Compensation only
           </label>
 
-          <button type="submit" className="atlas-button atlas-button-variant-3">
-            Apply filters
-          </button>
+          <Tooltip label="Press Enter or click to refresh trial list with selected filters">
+            <button
+              type="submit"
+              className="atlas-button atlas-button-variant-3"
+            >
+              Apply filters
+            </button>
+          </Tooltip>
+        </form>
 
+        <div className="all-trials-filter-actions">
           <button
             type="button"
             className="atlas-button atlas-button-variant-back"
@@ -197,7 +218,9 @@ export default function AllTrialsPage({
           >
             {showSavedOnly ? "Show all" : "Saved only"}
           </button>
-        </form>
+
+          <TrialModeButton mode="swipe" onClick={onNavigateFindTrials} />
+        </div>
 
         <div className="all-trials-up-next">
           <div className="all-trials-up-next-header">Up Next</div>

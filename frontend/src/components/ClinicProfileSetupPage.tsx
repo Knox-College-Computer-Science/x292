@@ -9,6 +9,7 @@ type ClinicProfileSetupPageProps = {
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
+  onLogout?: () => void;
 };
 
 export default function ClinicProfileSetupPage({
@@ -18,6 +19,7 @@ export default function ClinicProfileSetupPage({
   onNavigateAnalytics,
   onNavigateAllTrials,
   onSelectExperience,
+  onLogout,
 }: ClinicProfileSetupPageProps) {
   return (
     <main className="clinic-profile-page">
@@ -29,6 +31,23 @@ export default function ClinicProfileSetupPage({
         onNavigateAllTrials={onNavigateAllTrials}
         onSelectExperience={onSelectExperience}
       />
+      {onLogout ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            padding: "8px 16px",
+          }}
+        >
+          <button
+            type="button"
+            className="atlas-button atlas-button-variant-back"
+            onClick={() => onLogout()}
+          >
+            Log out
+          </button>
+        </div>
+      ) : null}
       <section
         className="clinic-profile-page-content"
         aria-label="Clinic profile setup"

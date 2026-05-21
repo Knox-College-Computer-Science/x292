@@ -47,6 +47,24 @@
   gap: 10px !important;
 }
 
+.all-trials-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* When moved outside the filter box, add spacing and ensure right alignment */
+.all-trials-filter-actions {
+  width: 100%;
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+
+.trial-mode-button {
+  min-width: 132px;
+}
+
 .all-trials-up-next,
 .all-trials-status {
   width: 100%;
@@ -199,6 +217,14 @@
 @media (max-width: 1000px) {
   .all-trials-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .all-trials-filter-actions {
+    justify-content: stretch;
+  }
+
+  .all-trials-filter-actions .atlas-button {
+    width: 100%;
   }
 
   .all-trials-status-header,

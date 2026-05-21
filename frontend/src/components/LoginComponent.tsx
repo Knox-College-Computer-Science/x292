@@ -1,5 +1,6 @@
 ﻿import { FormEvent, useMemo, useState } from "react";
 import "./LoginComponent.css";
+import Tooltip from "./Tooltip";
 
 type LoginMode = "sign-in" | "create";
 
@@ -64,29 +65,33 @@ export default function LoginComponent({
           <label className="login-field-label" htmlFor="login-email">
             Email
           </label>
-          <input
-            id="login-email"
-            className="login-input"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
+          <Tooltip label="Your email address for login and notifications">
+            <input
+              id="login-email"
+              className="login-input"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </Tooltip>
         </div>
 
         <div className="login-field-group login-field-group-secondary">
           <label className="login-field-label" htmlFor="login-password">
             Password
           </label>
-          <input
-            id="login-password"
-            className="login-input"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            minLength={8}
-            required
-          />
+          <Tooltip label="Password must be at least 8 characters">
+            <input
+              id="login-password"
+              className="login-input"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              minLength={8}
+              required
+            />
+          </Tooltip>
         </div>
 
         {isClinic ? (
@@ -94,23 +99,27 @@ export default function LoginComponent({
             <label className="login-field-label" htmlFor="login-organization">
               Organization
             </label>
-            <input
-              id="login-organization"
-              className="login-input"
-              type="text"
-              value={organization}
-              onChange={(event) => setOrganization(event.target.value)}
-            />
+            <Tooltip label="Your clinic's name (optional)">
+              <input
+                id="login-organization"
+                className="login-input"
+                type="text"
+                value={organization}
+                onChange={(event) => setOrganization(event.target.value)}
+              />
+            </Tooltip>
           </div>
         ) : null}
 
         <label className="login-checkbox-row" htmlFor="remember-email">
-          <input
-            id="remember-email"
-            type="checkbox"
-            checked={rememberEmail}
-            onChange={(event) => setRememberEmail(event.target.checked)}
-          />
+          <Tooltip label="Auto-fill your email next time (stored locally)">
+            <input
+              id="remember-email"
+              type="checkbox"
+              checked={rememberEmail}
+              onChange={(event) => setRememberEmail(event.target.checked)}
+            />
+          </Tooltip>
           Remember email on this device
         </label>
 
@@ -119,24 +128,38 @@ export default function LoginComponent({
         ) : null}
 
         <div className="login-actions">
-          <button
-            type="button"
-            className="atlas-button atlas-button-variant-back login-create-account"
-            onClick={() => setMode(mode === "sign-in" ? "create" : "sign-in")}
+          <Tooltip
+            label={
+              mode === "sign-in" ? "Create a new account" : "Return to sign in"
+            }
           >
-            {mode === "sign-in" ? "Create Account" : "Back to Sign In"}
-          </button>
-          <button
-            type="submit"
-            className="atlas-button atlas-button-variant-3 login-next"
-            disabled={isLoading}
+            <button
+              type="button"
+              className="atlas-button atlas-button-variant-back login-create-account"
+              onClick={() => setMode(mode === "sign-in" ? "create" : "sign-in")}
+            >
+              {mode === "sign-in" ? "Create Account" : "Back to Sign In"}
+            </button>
+          </Tooltip>
+          <Tooltip
+            label={
+              mode === "sign-in"
+                ? "Sign in to your account"
+                : "Create your account"
+            }
           >
-            {isLoading
-              ? "Please wait..."
-              : mode === "sign-in"
-                ? "Sign In"
-                : "Create"}
-          </button>
+            <button
+              type="submit"
+              className="atlas-button atlas-button-variant-3 login-next"
+              disabled={isLoading}
+            >
+              {isLoading
+                ? "Please wait..."
+                : mode === "sign-in"
+                  ? "Sign In"
+                  : "Create"}
+            </button>
+          </Tooltip>
         </div>
       </form>
     </section>

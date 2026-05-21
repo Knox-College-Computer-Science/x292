@@ -1,5 +1,6 @@
 ﻿import type { TrialAnalyticsStats } from "../api";
 import "./ClinicAnalyticsCard.css";
+import useSwipeActions from "./useSwipeActions";
 
 type ClinicAnalyticsCardProps = {
   stats: TrialAnalyticsStats | null;
@@ -23,10 +24,19 @@ export default function ClinicAnalyticsCard({
     : null;
   const topTrial = stats?.top_trials?.[0] ?? null;
 
+  const swipeActions = useSwipeActions({
+    onSwipeRight: () => {
+      if (topTrial) {
+        onNavigateMoreDetails(topTrial.id);
+      }
+    },
+  });
+
   return (
     <section
       className="clinic-analytics-card"
-      aria-label="Clinic analytics details"
+      aria-label="Clinic analytics details. Swipe right for more info."
+      {...swipeActions}
     >
       <h2 className="clinic-analytics-card-title">Admin Analytics Dashboard</h2>
 

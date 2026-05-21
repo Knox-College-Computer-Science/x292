@@ -6,7 +6,6 @@ import {
   type TrialAnalyticsStats,
 } from "../api";
 import HomeNavBar from "./HomeNavBar";
-import Arrows from "./Arrows";
 import UserAnalyticsCard from "./UserAnalyticsCard";
 import "./UserAnalyticsPage.css";
 
@@ -83,10 +82,6 @@ export default function UserAnalyticsPage({
           onNavigateMoreDetails={onNavigateMoreDetails}
           onNavigateHistoryTrial={onNavigateHistoryTrial}
         />
-
-        <div className="user-analytics-page-arrows">
-          <Arrows />
-        </div>
       </section>
     </main>
   );

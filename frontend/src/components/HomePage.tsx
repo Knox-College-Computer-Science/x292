@@ -33,7 +33,7 @@ export default function HomePage({
         onNavigateAllTrials={onNavigateAllTrials}
         onSelectExperience={onSelectExperience}
       />
-      <HomeHero />
+      <HomeHero selectedExperience={selectedExperience} />
       <HomeCtaSection onNavigateLogin={onNavigateLogin} />
     </main>
   );

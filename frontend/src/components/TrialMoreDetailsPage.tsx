@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { getTrial, passTrial, saveTrial, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
+import Tooltip from "./Tooltip";
 import TextBox from "./TextBox";
 import "./TrialMoreDetailsPage.css";
 
@@ -29,7 +30,7 @@ export default function TrialMoreDetailsPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<"save" | "pass" | null>(
-    null
+    null,
   );
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
@@ -55,7 +56,7 @@ export default function TrialMoreDetailsPage({
       } catch (err) {
         if (!ignoreResult) {
           setError(
-            err instanceof Error ? err.message : "Could not load trial details"
+            err instanceof Error ? err.message : "Could not load trial details",
           );
         }
       } finally {
@@ -96,7 +97,7 @@ export default function TrialMoreDetailsPage({
       }
     } catch (err) {
       setActionMessage(
-        err instanceof Error ? err.message : "Could not update trial."
+        err instanceof Error ? err.message : "Could not update trial.",
       );
     } finally {
       setActionLoading(null);
@@ -126,7 +127,10 @@ export default function TrialMoreDetailsPage({
         ) : error ? (
           <TextBox heading="Could not load trial" body={error} />
         ) : !trial ? (
-          <TextBox heading="Trial not found" body="No trial details were found." />
+          <TextBox
+            heading="Trial not found"
+            body="No trial details were found."
+          />
         ) : (
           <>
             <TextBox
@@ -153,7 +157,8 @@ export default function TrialMoreDetailsPage({
               body={`Location: ${trial.location}.\nSponsor: ${
                 trial.sponsor ?? "Not listed"
               }.\nCompensation: ${
-                trial.compensation ?? "Compensation information is not available."
+                trial.compensation ??
+                "Compensation information is not available."
               }.\nRemote eligible: ${trial.remote_eligible ? "Yes" : "No"}.\nContact/Application: ${
                 trial.contact_link ?? "Not listed"
               }`}
@@ -162,34 +167,42 @@ export default function TrialMoreDetailsPage({
         )}
 
         <div className="trial-more-details-actions">
-          <button
-            type="button"
-            className="atlas-button atlas-button-variant-3"
-            onClick={() => void handleTrialAction("save")}
-            disabled={actionLoading !== null}
-          >
-            {actionLoading === "save" ? "Saving..." : "Save"}
-          </button>
+          <Tooltip label="Add this trial to your saved applications">
+            <button
+              type="button"
+              className="atlas-button atlas-button-variant-3"
+              onClick={() => void handleTrialAction("save")}
+              disabled={actionLoading !== null}
+            >
+              {actionLoading === "save" ? "Saving..." : "Save"}
+            </button>
+          </Tooltip>
 
-          <button
-            type="button"
-            className="atlas-button atlas-button-variant-back"
-            onClick={() => void handleTrialAction("pass")}
-            disabled={actionLoading !== null}
-          >
-            {actionLoading === "pass" ? "Passing..." : "Pass"}
-          </button>
+          <Tooltip label="Mark as not interested—you can find it later in your history">
+            <button
+              type="button"
+              className="atlas-button atlas-button-variant-back"
+              onClick={() => void handleTrialAction("pass")}
+              disabled={actionLoading !== null}
+            >
+              {actionLoading === "pass" ? "Passing..." : "Pass"}
+            </button>
+          </Tooltip>
 
-          <button
-            type="button"
-            className="atlas-button atlas-button-variant-back trial-more-details-back"
-            onClick={onNavigateAllTrials}
-          >
-            Back
-          </button>
+          <Tooltip label="Return to the trial list">
+            <button
+              type="button"
+              className="atlas-button atlas-button-variant-back trial-more-details-back"
+              onClick={onNavigateAllTrials}
+            >
+              Back
+            </button>
+          </Tooltip>
         </div>
 
-        {actionMessage ? <p className="trial-action-message">{actionMessage}</p> : null}
+        {actionMessage ? (
+          <p className="trial-action-message">{actionMessage}</p>
+        ) : null}
       </section>
     </main>
   );

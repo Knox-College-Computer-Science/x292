@@ -20,6 +20,7 @@ type ProfileSetupPageProps = {
   onNavigateLogin: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
   onProfileSaved: (profile: UserProfile) => void;
+  onLogout?: () => void;
 };
 
 const DEFAULT_VALUES: ProfileFormValues = {
@@ -51,6 +52,7 @@ export default function ProfileSetupPage({
   onNavigateLogin,
   onSelectExperience,
   onProfileSaved,
+  onLogout,
 }: ProfileSetupPageProps) {
   const [values, setValues] = useState<ProfileFormValues>(DEFAULT_VALUES);
   const [matchingFields, setMatchingFields] = useState<Record<string, boolean>>(
@@ -229,6 +231,25 @@ export default function ProfileSetupPage({
         onNavigateAllTrials={onNavigateAllTrials}
         onSelectExperience={onSelectExperience}
       />
+      {onLogout ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            padding: "8px 16px",
+          }}
+        >
+          <button
+            type="button"
+            className="atlas-button atlas-button-variant-back"
+            onClick={() => {
+              onLogout();
+            }}
+          >
+            Log out
+          </button>
+        </div>
+      ) : null}
       <section className="profile-page-content" aria-label="Profile setup">
         <p className="profile-page-intro">
           Choose your account preferences before browsing trials.

@@ -10,8 +10,15 @@
   padding-top: 19px;
 }
 
-.nav-home {
+.nav-action {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.nav-home-group {
   margin-left: 42px;
+  align-items: flex-start;
 }
 
 .nav-experience {
@@ -29,6 +36,33 @@
 
 .nav-profile {
   margin-left: 21px;
+}
+
+.nav-button-icon {
+  width: auto;
+  height: 72px;
+  max-height: 72px;
+  margin-right: 8px;
+  object-fit: contain;
+  flex: 0 0 auto;
+  vertical-align: middle;
+}
+
+.nav-button-icon--owl {
+  transform: translateY(5px);
+}
+
+.nav-home {
+  margin: 0;
+}
+
+.nav-participants-group {
+  display: flex;
+  align-items: center;
+}
+
+.nav-participants-group .nav-button-icon {
+  margin-right: 8px;
 }
 
 .experience-select {

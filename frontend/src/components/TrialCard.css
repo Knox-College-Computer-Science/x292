@@ -6,6 +6,8 @@
     var(--accent-color);
   color: var(--on-brand);
   padding: 24px;
+  touch-action: pan-y;
+  cursor: grab;
 }
 
 .trial-card-header-row {
