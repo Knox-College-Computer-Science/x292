@@ -191,6 +191,10 @@ def get_trial_details(
     if current_user:
         crud.view_trial(db, current_user.id, trial_id)
 
+    if current_user and current_user.profile:
+        score, reasons = _score_for_user(db, current_user.id, trial)
+        return _trial_to_dict(trial, score=score, reasons=reasons)
+
     return _trial_to_dict(trial)
 
 

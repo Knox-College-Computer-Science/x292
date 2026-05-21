@@ -16,7 +16,7 @@ type AllTrialsPageProps = {
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-const DEFAULT_CONDITION = "diabetes";
+const DEFAULT_CONDITION = "";
 
 function formatTrialMeta(trial: Trial) {
   const status = trial.recruitment_status || "Status not listed";
@@ -27,6 +27,10 @@ function formatTrialMeta(trial: Trial) {
 
 function includesText(value: string | null | undefined, search: string) {
   return value?.toLowerCase().includes(search.toLowerCase()) ?? false;
+}
+
+function matchesText(value: string | null | undefined, search: string) {
+  return value?.trim().toLowerCase() === search.trim().toLowerCase();
 }
 
 export default function AllTrialsPage({
@@ -46,7 +50,7 @@ export default function AllTrialsPage({
 
   const [condition, setCondition] = useState(DEFAULT_CONDITION);
   const [location, setLocation] = useState("");
-  const [status, setStatus] = useState("Recruiting");
+  const [status, setStatus] = useState("");
   const [phase, setPhase] = useState("");
   const [participation, setParticipation] = useState("Either");
   const [requiresCompensation, setRequiresCompensation] = useState(false);
@@ -89,11 +93,11 @@ export default function AllTrialsPage({
         return false;
       }
 
-      if (statusFilter && trial.recruitment_status !== statusFilter) {
+      if (statusFilter && !matchesText(trial.recruitment_status, statusFilter)) {
         return false;
       }
 
-      if (phaseFilter && trial.study_phase !== phaseFilter) {
+      if (phaseFilter && !includesText(trial.study_phase, phaseFilter)) {
         return false;
       }
 
@@ -148,7 +152,7 @@ export default function AllTrialsPage({
             <input
               value={condition}
               onChange={(event) => setCondition(event.target.value)}
-              placeholder="e.g. diabetes"
+              placeholder="Filter saved trials"
             />
           </label>
 
@@ -217,6 +221,9 @@ export default function AllTrialsPage({
 
         <div className="all-trials-filter-actions">
           <span className="all-trials-saved-label">Showing saved trials</span>
+          <span className="all-trials-saved-label">
+            {activeTrials.length} of {savedTrials.length} saved visible
+          </span>
 
           <TrialModeButton mode="swipe" onClick={onNavigateFindTrials} />
         </div>
