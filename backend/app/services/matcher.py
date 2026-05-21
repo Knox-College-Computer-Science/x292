@@ -20,6 +20,18 @@ def _condition_match(profile_condition: str, trial_condition: str) -> int:
     )
 
 
+def _matched_profile_condition(profile_condition: str, trial_condition: str) -> str | None:
+    if not profile_condition or not trial_condition:
+        return None
+
+    trial_condition_lower = trial_condition.lower()
+    for condition in profile_condition.split(","):
+        condition = condition.strip()
+        if condition and condition.lower() in trial_condition_lower:
+            return condition
+    return None
+
+
 def _location_match(profile_location: str, trial_location: str) -> int:
     if not profile_location or not trial_location:
         return 0
@@ -56,6 +68,16 @@ def _compensation_match(compensation_required: bool, compensation: str) -> int:
         return 0
 
     return 1
+
+
+def _format_age_range(profile: models.UserProfile) -> str:
+    if profile.age_range_min is not None and profile.age_range_max is not None:
+        return f"{profile.age_range_min}-{profile.age_range_max}"
+    if profile.age_range_min is not None:
+        return f"{profile.age_range_min}+"
+    if profile.age_range_max is not None:
+        return f"up to {profile.age_range_max}"
+    return ""
 
 
 def _age_compatible(profile: models.UserProfile, trial: models.Trial) -> bool:
@@ -130,17 +152,32 @@ def _pareto_front(
     return front
 
 
-def _score_from_metrics(metrics: Dict[str, int]) -> Tuple[float, List[str]]:
+def _score_from_metrics(
+    metrics: Dict[str, int],
+    profile: models.UserProfile | None = None,
+    trial: models.Trial | None = None,
+) -> Tuple[float, List[str]]:
     score = 0.0
     reasons = []
 
     if metrics.get("condition"):
         score += 40
-        reasons.append("Matches your health conditions")
+        matched_condition = (
+            _matched_profile_condition(profile.health_conditions, trial.condition)
+            if profile and trial
+            else None
+        )
+        if matched_condition:
+            reasons.append(f"Matches {matched_condition.lower()} from your profile")
+        else:
+            reasons.append("Matches your health conditions")
 
     if metrics.get("location"):
         score += 30
-        reasons.append("Near your preferred location")
+        if profile and profile.location:
+            reasons.append(f"Located near {profile.location}")
+        else:
+            reasons.append("Near your preferred location")
 
     if metrics.get("recruiting"):
         score += 20
@@ -152,15 +189,25 @@ def _score_from_metrics(metrics: Dict[str, int]) -> Tuple[float, List[str]]:
 
     if metrics.get("age"):
         score += 10
-        reasons.append("Fits your age range")
+        age_range = _format_age_range(profile) if profile else ""
+        if age_range:
+            reasons.append(f"Fits your preferred age range ({age_range})")
+        else:
+            reasons.append("Fits your age range")
 
     if metrics.get("phase"):
         score += 10
-        reasons.append("Matches your preferred study phase")
+        if profile and profile.preferred_study_phase:
+            reasons.append(f"Matches preferred {profile.preferred_study_phase}")
+        else:
+            reasons.append("Matches your preferred study phase")
 
     if metrics.get("compensation"):
         score += 10
-        reasons.append("Offers compensation")
+        if trial and trial.compensation:
+            reasons.append(f"Offers compensation: {trial.compensation}")
+        else:
+            reasons.append("Offers compensation")
 
     return min(score, 100), reasons
 
@@ -204,7 +251,7 @@ def match_trials(
 
     matched_trials = []
     for trial, metrics in pareto_trials:
-        score, reasons = _score_from_metrics(metrics)
+        score, reasons = _score_from_metrics(metrics, profile, trial)
         matched_trials.append((trial, score, reasons))
 
     matched_trials.sort(key=lambda x: x[1], reverse=True)
@@ -220,8 +267,9 @@ def score_trial(
     if not user or not user.profile:
         raise Exception("User profile not found")
 
-    metrics = _build_metrics(user.profile, trial)
-    return _score_from_metrics(metrics)
+    profile = user.profile
+    metrics = _build_metrics(profile, trial)
+    return _score_from_metrics(metrics, profile, trial)
 
 
 def get_matched_trials(db: Session, user_id: str, condition: str) -> List[models.Trial]:

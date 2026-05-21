@@ -43,6 +43,13 @@
   font-weight: 700;
 }
 
+.trial-filter-hint {
+  margin: -4px 0 0;
+  color: var(--main-color);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
 .trial-mode-button {
   min-width: 132px;
 }

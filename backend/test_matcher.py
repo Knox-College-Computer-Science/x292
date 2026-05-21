@@ -298,9 +298,11 @@ class MatcherTests(unittest.TestCase):
         score, reasons = matcher.score_trial(self.db_session, user.id, saved_trial)
 
         self.assertEqual(score, 100)
-        self.assertIn("Fits your age range", reasons)
-        self.assertIn("Matches your preferred study phase", reasons)
-        self.assertIn("Offers compensation", reasons)
+        self.assertIn("Matches diabetes from your profile", reasons)
+        self.assertIn("Located near Chicago", reasons)
+        self.assertIn("Fits your preferred age range (18-65)", reasons)
+        self.assertIn("Matches preferred Phase 2", reasons)
+        self.assertIn("Offers compensation: $100", reasons)
 
     def test_match_trials_ranks_best_remaining_trial_and_skips_saved_or_passed(self):
         user = create_user_with_profile(self.db_session)
@@ -369,8 +371,8 @@ class MatcherTests(unittest.TestCase):
         self.assertEqual(
             reasons,
             [
-                "Matches your health conditions",
-                "Near your preferred location",
+                "Matches diabetes from your profile",
+                "Located near Chicago",
                 "Currently recruiting",
                 "Supports remote participation",
             ],

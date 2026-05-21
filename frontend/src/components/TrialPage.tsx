@@ -32,6 +32,7 @@ export default function TrialPage({
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [appliedSearch, setAppliedSearch] = useState("diabetes");
+  const [appliedStatus, setAppliedStatus] = useState("Recruiting");
   const latestLoadId = useRef(0);
 
   const [condition, setCondition] = useState("diabetes");
@@ -53,6 +54,7 @@ export default function TrialPage({
       const normalizedParticipation =
         participation === "Either" ? undefined : participation;
       const queryCondition = condition.trim() || "your profile";
+      const queryStatus = status.trim();
 
       const data = await listTrials(
         {
@@ -73,6 +75,7 @@ export default function TrialPage({
       setTrials(data);
       setCurrentIndex(0);
       setAppliedSearch(queryCondition);
+      setAppliedStatus(queryStatus);
     } catch (err) {
       if (loadId !== latestLoadId.current) {
         return;
@@ -85,6 +88,8 @@ export default function TrialPage({
       );
       setTrials([]);
       setCurrentIndex(0);
+      setAppliedSearch(condition.trim() || "your profile");
+      setAppliedStatus(status.trim());
     } finally {
       if (loadId === latestLoadId.current) {
         setLoading(false);
@@ -100,6 +105,11 @@ export default function TrialPage({
     () => (currentIndex < trials.length ? trials[currentIndex] : null),
     [currentIndex, trials],
   );
+  const statusSummary = appliedStatus
+    ? `${appliedStatus.toLowerCase()} `
+    : "";
+  const shouldShowStatusHint =
+    !loading && !error && appliedStatus === "Recruiting" && trials.length <= 1;
 
   async function handleAction(action: "save" | "pass") {
     if (!currentTrial) {
@@ -151,6 +161,7 @@ export default function TrialPage({
             <input
               value={condition}
               onChange={(event) => setCondition(event.target.value)}
+              placeholder="diabetes, pneumonia, cancer"
             />
           </label>
 
@@ -223,8 +234,8 @@ export default function TrialPage({
 
         <div className="trial-filter-actions">
           <span className="trial-results-summary">
-            Showing {trials.length} {trials.length === 1 ? "card" : "cards"} for{" "}
-            {appliedSearch}
+            Showing {trials.length} {statusSummary}
+            {trials.length === 1 ? "card" : "cards"} for {appliedSearch}
           </span>
           <button
             type="button"
@@ -234,6 +245,13 @@ export default function TrialPage({
             All Trials
           </button>
         </div>
+
+        {shouldShowStatusHint ? (
+          <p className="trial-filter-hint">
+            Recruiting filter is on. Change Status to Any to include more
+            cached matches for {appliedSearch}.
+          </p>
+        ) : null}
 
         {loading ? (
           <div className="trial-card-skeleton" aria-hidden="true">
@@ -253,6 +271,12 @@ export default function TrialPage({
           >
             <p className="state-card-title">Could not load matcher cards</p>
             <p className="state-card-message">{error}</p>
+            {appliedStatus === "Recruiting" ? (
+              <p className="state-card-message">
+                Try Status: Any if the condition has older or non-recruiting
+                trial records.
+              </p>
+            ) : null}
           </div>
         ) : null}
 
