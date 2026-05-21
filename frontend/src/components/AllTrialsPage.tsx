@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { getMySavedTrials, listTrials, type Trial } from "../api";
+import { getMySavedTrials, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
 import Tooltip from "./Tooltip";
 import TrialModeButton from "./TrialModeButton";
@@ -17,13 +17,21 @@ type AllTrialsPageProps = {
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 
-const DEFAULT_CONDITION = "diabetes";
+const DEFAULT_CONDITION = "";
 
 function formatTrialMeta(trial: Trial) {
   const status = trial.recruitment_status || "Status not listed";
   const phase = trial.study_phase ?? "Phase not listed";
   const location = trial.location || "Location not listed";
   return `${status} - ${phase} - ${location}`;
+}
+
+function includesText(value: string | null | undefined, search: string) {
+  return value?.toLowerCase().includes(search.toLowerCase()) ?? false;
+}
+
+function matchesText(value: string | null | undefined, search: string) {
+  return value?.trim().toLowerCase() === search.trim().toLowerCase();
 }
 
 export default function AllTrialsPage({
@@ -37,15 +45,13 @@ export default function AllTrialsPage({
   onNavigateMoreDetails,
   onSelectExperience,
 }: AllTrialsPageProps) {
-  const [trials, setTrials] = useState<Trial[]>([]);
   const [savedTrials, setSavedTrials] = useState<Trial[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showSavedOnly, setShowSavedOnly] = useState(false);
 
   const [condition, setCondition] = useState(DEFAULT_CONDITION);
   const [location, setLocation] = useState("");
-  const [status, setStatus] = useState("Recruiting");
+  const [status, setStatus] = useState("");
   const [phase, setPhase] = useState("");
   const [participation, setParticipation] = useState("Either");
   const [requiresCompensation, setRequiresCompensation] = useState(false);
@@ -55,25 +61,8 @@ export default function AllTrialsPage({
       setLoading(true);
       setError(null);
 
-      const normalizedParticipation =
-        participation === "Either" ? undefined : participation;
+      const userSaved = authToken ? await getMySavedTrials(authToken) : [];
 
-      const [trialData, userSaved] = await Promise.all([
-        listTrials(
-          {
-            condition: condition.trim() || undefined,
-            location: location.trim() || undefined,
-            status: status.trim() || undefined,
-            phase: phase.trim() || undefined,
-            participation: normalizedParticipation,
-            requiresCompensation,
-          },
-          authToken,
-        ),
-        authToken ? getMySavedTrials(authToken) : Promise.resolve([]),
-      ]);
-
-      setTrials(trialData);
       setSavedTrials(userSaved);
     } catch (err) {
       setError(
@@ -91,13 +80,51 @@ export default function AllTrialsPage({
   }, [authToken]);
 
   const activeTrials = useMemo(() => {
-    if (!showSavedOnly) {
-      return trials;
-    }
+    const conditionFilter = condition.trim();
+    const locationFilter = location.trim();
+    const statusFilter = status.trim();
+    const phaseFilter = phase.trim();
 
-    const savedIds = new Set(savedTrials.map((trial) => trial.id));
-    return trials.filter((trial) => savedIds.has(trial.id));
-  }, [showSavedOnly, trials, savedTrials]);
+    return savedTrials.filter((trial) => {
+      if (conditionFilter && !includesText(trial.condition, conditionFilter)) {
+        return false;
+      }
+
+      if (locationFilter && !includesText(trial.location, locationFilter)) {
+        return false;
+      }
+
+      if (statusFilter && !matchesText(trial.recruitment_status, statusFilter)) {
+        return false;
+      }
+
+      if (phaseFilter && !includesText(trial.study_phase, phaseFilter)) {
+        return false;
+      }
+
+      if (participation === "Remote" && !trial.remote_eligible) {
+        return false;
+      }
+
+      if (participation === "In-person" && trial.remote_eligible) {
+        return false;
+      }
+
+      if (requiresCompensation && !trial.compensation) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [
+    condition,
+    location,
+    participation,
+    phase,
+    requiresCompensation,
+    savedTrials,
+    status,
+  ]);
 
   const upNextTrials = activeTrials.slice(0, 2);
   const statusTrials = activeTrials.slice(0, 8);
@@ -127,7 +154,7 @@ export default function AllTrialsPage({
               <input
                 value={condition}
                 onChange={(event) => setCondition(event.target.value)}
-                placeholder="e.g. diabetes"
+                placeholder="Filter saved trials"
               />
             </Tooltip>
           </label>
@@ -150,9 +177,9 @@ export default function AllTrialsPage({
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
               >
+                <option value="">Any</option>
                 <option value="Recruiting">Recruiting</option>
                 <option value="Not yet recruiting">Not yet recruiting</option>
-                <option value="">Any</option>
               </select>
             </Tooltip>
           </label>
@@ -211,13 +238,10 @@ export default function AllTrialsPage({
         </form>
 
         <div className="all-trials-filter-actions">
-          <button
-            type="button"
-            className="atlas-button atlas-button-variant-back"
-            onClick={() => setShowSavedOnly((value) => !value)}
-          >
-            {showSavedOnly ? "Show all" : "Saved only"}
-          </button>
+          <span className="all-trials-saved-label">Showing saved trials</span>
+          <span className="all-trials-saved-label">
+            {activeTrials.length} of {savedTrials.length} saved visible
+          </span>
 
           <TrialModeButton mode="swipe" onClick={onNavigateFindTrials} />
         </div>
@@ -246,7 +270,9 @@ export default function AllTrialsPage({
               </div>
             </div>
           ) : upNextTrials.length === 0 ? (
-            <div className="all-trials-message-row">No trials found.</div>
+            <div className="all-trials-message-row">
+              No saved trials matched the selected filters.
+            </div>
           ) : (
             upNextTrials.map((trial, index) => (
               <div
@@ -298,8 +324,8 @@ export default function AllTrialsPage({
             </div>
           ) : statusTrials.length === 0 ? (
             <div className="all-trials-message-row">
-              No trials matched the selected filters. Try broadening your
-              criteria.
+              No saved trials matched the selected filters. Try broadening your
+              criteria or save more trials from the matcher.
             </div>
           ) : (
             statusTrials.map((trial, index) => (

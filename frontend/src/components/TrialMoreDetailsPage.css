@@ -14,6 +14,35 @@
   padding-bottom: 34px;
 }
 
+.trial-more-details-match-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 12px;
+  background:
+    linear-gradient(var(--main-overlay-strong), var(--main-overlay-strong)),
+    var(--accent-color);
+  color: var(--on-brand);
+}
+
+.trial-more-details-match-summary h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.25;
+}
+
+.trial-more-details-match-summary p {
+  margin: 8px 0 0;
+  color: var(--highlight-color);
+  line-height: 1.45;
+}
+
+.trial-more-details-match-summary .trial-rating {
+  flex: 0 0 auto;
+}
+
 .trial-more-details-actions {
   margin-top: 50px;
   display: flex;
@@ -32,4 +61,10 @@
   margin: 0;
   color: var(--main-color);
   font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .trial-more-details-match-summary {
+    flex-direction: column;
+  }
 }

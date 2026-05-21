@@ -20,6 +20,18 @@ def _condition_match(profile_condition: str, trial_condition: str) -> int:
     )
 
 
+def _matched_profile_condition(profile_condition: str, trial_condition: str) -> str | None:
+    if not profile_condition or not trial_condition:
+        return None
+
+    trial_condition_lower = trial_condition.lower()
+    for condition in profile_condition.split(","):
+        condition = condition.strip()
+        if condition and condition.lower() in trial_condition_lower:
+            return condition
+    return None
+
+
 def _location_match(profile_location: str, trial_location: str) -> int:
     if not profile_location or not trial_location:
         return 0
@@ -44,6 +56,30 @@ def _remote_match(participation_preference: str, remote_eligible: bool) -> int:
     return 0
 
 
+def _phase_match(preferred_phase: str, trial_phase: str) -> int:
+    if not preferred_phase or preferred_phase.lower() == "any" or not trial_phase:
+        return 0
+
+    return 1 if preferred_phase.lower() in trial_phase.lower() else 0
+
+
+def _compensation_match(compensation_required: bool, compensation: str) -> int:
+    if not compensation_required or not compensation:
+        return 0
+
+    return 1
+
+
+def _format_age_range(profile: models.UserProfile) -> str:
+    if profile.age_range_min is not None and profile.age_range_max is not None:
+        return f"{profile.age_range_min}-{profile.age_range_max}"
+    if profile.age_range_min is not None:
+        return f"{profile.age_range_min}+"
+    if profile.age_range_max is not None:
+        return f"up to {profile.age_range_max}"
+    return ""
+
+
 def _age_compatible(profile: models.UserProfile, trial: models.Trial) -> bool:
     preferred_min = profile.age_range_min
     preferred_max = profile.age_range_max
@@ -66,6 +102,7 @@ def _build_metrics(profile: models.UserProfile, trial: models.Trial) -> Dict[str
     use_condition = enabled.get("health_conditions", True)
     use_location = enabled.get("location", True)
     use_participation = enabled.get("participation_preference", True)
+    use_age = enabled.get("age_range", True)
 
     return {
         "condition": _condition_match(profile.health_conditions, trial.condition)
@@ -76,6 +113,16 @@ def _build_metrics(profile: models.UserProfile, trial: models.Trial) -> Dict[str
         "remote": _remote_match(profile.participation_preference, trial.remote_eligible)
         if use_participation
         else 0,
+        "age": 1
+        if use_age
+        and (profile.age_range_min is not None or profile.age_range_max is not None)
+        and _age_compatible(profile, trial)
+        else 0,
+        "phase": _phase_match(profile.preferred_study_phase, trial.study_phase),
+        "compensation": _compensation_match(
+            profile.compensation_required,
+            trial.compensation,
+        ),
     }
 
 
@@ -105,27 +152,64 @@ def _pareto_front(
     return front
 
 
-def _score_from_metrics(metrics: Dict[str, int]) -> Tuple[float, List[str]]:
+def _score_from_metrics(
+    metrics: Dict[str, int],
+    profile: models.UserProfile | None = None,
+    trial: models.Trial | None = None,
+) -> Tuple[float, List[str]]:
     score = 0.0
     reasons = []
 
-    if metrics["condition"]:
+    if metrics.get("condition"):
         score += 40
-        reasons.append("condition match")
+        matched_condition = (
+            _matched_profile_condition(profile.health_conditions, trial.condition)
+            if profile and trial
+            else None
+        )
+        if matched_condition:
+            reasons.append(f"Matches {matched_condition.lower()} from your profile")
+        else:
+            reasons.append("Matches your health conditions")
 
-    if metrics["location"]:
+    if metrics.get("location"):
         score += 30
-        reasons.append("location match")
+        if profile and profile.location:
+            reasons.append(f"Located near {profile.location}")
+        else:
+            reasons.append("Near your preferred location")
 
-    if metrics["recruiting"]:
+    if metrics.get("recruiting"):
         score += 20
-        reasons.append("actively recruiting")
+        reasons.append("Currently recruiting")
 
-    if metrics["remote"]:
+    if metrics.get("remote"):
         score += 10
-        reasons.append("remote eligible")
+        reasons.append("Supports remote participation")
 
-    return score, reasons
+    if metrics.get("age"):
+        score += 10
+        age_range = _format_age_range(profile) if profile else ""
+        if age_range:
+            reasons.append(f"Fits your preferred age range ({age_range})")
+        else:
+            reasons.append("Fits your age range")
+
+    if metrics.get("phase"):
+        score += 10
+        if profile and profile.preferred_study_phase:
+            reasons.append(f"Matches preferred {profile.preferred_study_phase}")
+        else:
+            reasons.append("Matches your preferred study phase")
+
+    if metrics.get("compensation"):
+        score += 10
+        if trial and trial.compensation:
+            reasons.append(f"Offers compensation: {trial.compensation}")
+        else:
+            reasons.append("Offers compensation")
+
+    return min(score, 100), reasons
 
 
 def match_trials(
@@ -167,11 +251,25 @@ def match_trials(
 
     matched_trials = []
     for trial, metrics in pareto_trials:
-        score, reasons = _score_from_metrics(metrics)
+        score, reasons = _score_from_metrics(metrics, profile, trial)
         matched_trials.append((trial, score, reasons))
 
     matched_trials.sort(key=lambda x: x[1], reverse=True)
     return matched_trials
+
+
+def score_trial(
+    db: Session,
+    user_id: str,
+    trial: models.Trial,
+) -> Tuple[float, List[str]]:
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user or not user.profile:
+        raise Exception("User profile not found")
+
+    profile = user.profile
+    metrics = _build_metrics(profile, trial)
+    return _score_from_metrics(metrics, profile, trial)
 
 
 def get_matched_trials(db: Session, user_id: str, condition: str) -> List[models.Trial]:
