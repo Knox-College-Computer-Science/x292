@@ -11,7 +11,7 @@ type ClinicLoginPageProps = {
   onSelectExperience: (experience: "clinics" | "participants") => void;
   rememberedEmail?: string;
   onAuthenticate: (payload: {
-    mode: "sign-in" | "create";
+    mode: "sign-in" | "create" | "reset-password";
     email: string;
     password: string;
     organization?: string;

@@ -39,6 +39,42 @@ type SessionState = {
 
 const SESSION_STORAGE_KEY = "atlas_session";
 const REMEMBERED_EMAIL_KEY = "atlas_remembered_email";
+<<<<<<< Updated upstream
+=======
+const NAVIGATION_STORAGE_KEY = "atlas_navigation";
+const PROFILE_ACCESSED_KEY = "atlas_profile_accessed_this_session";
+const CLINIC_PROFILE_ACCESSED_KEY = "atlas_clinic_profile_accessed_this_session";
+const APP_VIEWS: AppView[] = [
+  "home",
+  "login",
+  "analytics",
+  "analytics-result-uses",
+  "clinic-analytics-more",
+  "trials",
+  "trial-more-details",
+  "clinic-trial-card",
+  "profile",
+  "all-trials",
+];
+
+function isAppView(value: string): value is AppView {
+  return APP_VIEWS.includes(value as AppView);
+}
+
+function isExperienceMode(value: string): value is ExperienceMode {
+  return value === "clinics" || value === "participants";
+}
+
+function isClinicBackView(
+  value: string,
+): value is "analytics" | "all-trials" | "clinic-trial-card" {
+  return (
+    value === "analytics" ||
+    value === "all-trials" ||
+    value === "clinic-trial-card"
+  );
+}
+>>>>>>> Stashed changes
 
 function readStoredSession(): SessionState | null {
   const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
@@ -85,7 +121,7 @@ export default function App() {
   }, [view, experience]);
 
   async function handleAuthenticate(payload: {
-    mode: "sign-in" | "create";
+    mode: "sign-in" | "create" | "reset-password";
     email: string;
     password: string;
     rememberEmail: boolean;
@@ -116,6 +152,12 @@ export default function App() {
       } else {
         window.localStorage.removeItem(REMEMBERED_EMAIL_KEY);
       }
+
+      // Mark profile as accessed in this session
+      const profileKey = experience === "clinics" 
+        ? CLINIC_PROFILE_ACCESSED_KEY 
+        : PROFILE_ACCESSED_KEY;
+      window.sessionStorage.setItem(profileKey, "true");
 
       if (payload.mode === "create" || !response.profile_completed) {
         setView("profile");
@@ -152,7 +194,22 @@ export default function App() {
     return (
       <HomePage
         selectedExperience={experience}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => {
+          // Check if profile was accessed in this session
+          const profileKey = experience === "clinics" 
+            ? CLINIC_PROFILE_ACCESSED_KEY 
+            : PROFILE_ACCESSED_KEY;
+          const hasAccessed = window.sessionStorage.getItem(profileKey);
+          
+          if (!hasAccessed) {
+            // First time - show login page, mark as accessed
+            window.sessionStorage.setItem(profileKey, "true");
+            setView("login");
+          } else {
+            // Subsequent times - go directly to profile/preferences
+            setView("profile");
+          }
+        }}
         onNavigateLogin={() => setView("login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}

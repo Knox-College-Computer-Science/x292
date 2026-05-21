@@ -93,9 +93,31 @@
   height: 18px;
 }
 
+.login-forgot-password {
+  background: none;
+  border: none;
+  color: var(--participant-accent-color);
+  font-size: 0.95rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.login-forgot-password:hover {
+  color: var(--accent-color);
+}
+
 .login-error-message {
   margin: 12px 0 0;
   color: #ffd6d6;
+  font-weight: 700;
+}
+
+.login-success-message {
+  margin: 12px 0 0;
+  color: #4ade80;
   font-weight: 700;
 }
 
