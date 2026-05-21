@@ -1,4 +1,5 @@
 ﻿import type { Trial } from "../api";
+import TrialRating from "./TrialRating";
 import "./TrialCard.css";
 import Tooltip from "./Tooltip";
 import useSwipeActions from "./useSwipeActions";
@@ -11,6 +12,14 @@ type TrialCardProps = {
   onApply: () => void;
   onSkip: () => void;
 };
+
+function formatMatchRating(score: number | null | undefined) {
+  if (typeof score !== "number") {
+    return "N/A";
+  }
+
+  return `${Math.round(score)}%`;
+}
 
 export default function TrialCard({
   trial,
@@ -33,9 +42,12 @@ export default function TrialCard({
     >
       <div className="trial-card-header-row">
         <h2 className="trial-card-title">{trial.title}</h2>
-        <span className="trial-card-counter">
-          Card {currentIndex + 1} / {total}
-        </span>
+        <div className="trial-card-header-meta">
+          <TrialRating value={formatMatchRating(trial.match_score)} />
+          <span className="trial-card-counter">
+            Card {currentIndex + 1} / {total}
+          </span>
+        </div>
       </div>
 
       <div className="trial-card-grid">

@@ -63,9 +63,21 @@
   min-height: 240px;
 }
 
-.user-analytics-visual-box h3 {
-  margin: 0 0 10px;
+.user-analytics-visual-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.user-analytics-visual-heading h3 {
+  margin: 0;
   font-size: 1.2rem;
+}
+
+.user-analytics-visual-heading .trial-rating {
+  flex: 0 0 auto;
 }
 
 .history-empty {

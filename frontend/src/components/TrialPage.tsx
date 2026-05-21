@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { listTrials, passTrial, saveTrial, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
 import TrialCard from "./TrialCard";
@@ -32,6 +32,9 @@ export default function TrialPage({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [appliedSearch, setAppliedSearch] = useState("diabetes");
+  const [appliedStatus, setAppliedStatus] = useState("Recruiting");
+  const latestLoadId = useRef(0);
 
   const [condition, setCondition] = useState("diabetes");
   const [location, setLocation] = useState("");
@@ -41,6 +44,9 @@ export default function TrialPage({
   const [requiresCompensation, setRequiresCompensation] = useState(false);
 
   async function loadTrials() {
+    const loadId = latestLoadId.current + 1;
+    latestLoadId.current = loadId;
+
     try {
       setLoading(true);
       setError(null);
@@ -48,6 +54,8 @@ export default function TrialPage({
 
       const normalizedParticipation =
         participation === "Either" ? undefined : participation;
+      const queryCondition = condition.trim() || "your profile";
+      const queryStatus = status.trim();
 
       const data = await listTrials(
         {
@@ -61,9 +69,19 @@ export default function TrialPage({
         authToken,
       );
 
+      if (loadId !== latestLoadId.current) {
+        return;
+      }
+
       setTrials(data);
       setCurrentIndex(0);
+      setAppliedSearch(queryCondition);
+      setAppliedStatus(queryStatus);
     } catch (err) {
+      if (loadId !== latestLoadId.current) {
+        return;
+      }
+
       setError(
         err instanceof Error
           ? err.message
@@ -71,8 +89,12 @@ export default function TrialPage({
       );
       setTrials([]);
       setCurrentIndex(0);
+      setAppliedSearch(condition.trim() || "your profile");
+      setAppliedStatus(status.trim());
     } finally {
-      setLoading(false);
+      if (loadId === latestLoadId.current) {
+        setLoading(false);
+      }
     }
   }
 
@@ -84,6 +106,11 @@ export default function TrialPage({
     () => (currentIndex < trials.length ? trials[currentIndex] : null),
     [currentIndex, trials],
   );
+  const statusSummary = appliedStatus
+    ? `${appliedStatus.toLowerCase()} `
+    : "";
+  const shouldShowStatusHint =
+    !loading && !error && appliedStatus === "Recruiting" && trials.length <= 1;
 
   async function handleAction(action: "save" | "pass") {
     if (!currentTrial) {
@@ -132,10 +159,11 @@ export default function TrialPage({
         >
           <label>
             Condition
-            <Tooltip label="Search by condition name (e.g., 'diabetes')">
+            <Tooltip label="Search by condition name (e.g., 'diabetes', 'pneumonia', 'cancer')">
               <input
                 value={condition}
                 onChange={(event) => setCondition(event.target.value)}
+                placeholder="diabetes, pneumonia, cancer"
               />
             </Tooltip>
           </label>
@@ -212,14 +240,19 @@ export default function TrialPage({
             <button
               type="submit"
               className="atlas-button atlas-button-variant-3"
+              disabled={loading}
             >
-              Refresh cards
+              {loading ? "Loading..." : "Refresh cards"}
             </button>
           </Tooltip>
         </form>
 
         <div className="trial-filter-actions">
-          <Tooltip label="View all trials in a list">
+          <span className="trial-results-summary">
+            Showing {trials.length} {statusSummary}
+            {trials.length === 1 ? "card" : "cards"} for {appliedSearch}
+          </span>
+          <Tooltip label="View all saved trials in a list">
             <button
               type="button"
               className="atlas-button atlas-button-variant-back"
@@ -229,6 +262,13 @@ export default function TrialPage({
             </button>
           </Tooltip>
         </div>
+
+        {shouldShowStatusHint ? (
+          <p className="trial-filter-hint">
+            Recruiting filter is on. Change Status to Any to include more
+            cached matches for {appliedSearch}.
+          </p>
+        ) : null}
 
         {loading ? (
           <div className="trial-card-skeleton" aria-hidden="true">
@@ -248,6 +288,12 @@ export default function TrialPage({
           >
             <p className="state-card-title">Could not load matcher cards</p>
             <p className="state-card-message">{error}</p>
+            {appliedStatus === "Recruiting" ? (
+              <p className="state-card-message">
+                Try Status: Any if the condition has older or non-recruiting
+                trial records.
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -272,9 +318,10 @@ export default function TrialPage({
             <button
               type="button"
               className="atlas-button atlas-button-variant-3"
+              disabled={loading}
               onClick={() => void loadTrials()}
             >
-              Reload cards
+              {loading ? "Loading..." : "Reload cards"}
             </button>
           </div>
         ) : null}

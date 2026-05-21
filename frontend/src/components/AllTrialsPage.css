@@ -58,7 +58,19 @@
 .all-trials-filter-actions {
   width: 100%;
   margin-top: 12px;
+  align-items: center;
   justify-content: flex-end;
+}
+
+.all-trials-saved-label {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--main-tint);
+  color: var(--main-color);
+  font-weight: 700;
 }
 
 .trial-mode-button {
