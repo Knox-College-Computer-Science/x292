@@ -19,18 +19,18 @@
 }
 
 .atlas-button:focus-visible {
-  outline: 2px solid rgba(248, 221, 164, 0.9);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
 .atlas-button:hover:not(:disabled) {
-  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(255, 253, 249, 0.06),
+    0 6px 16px rgba(36, 50, 58, 0.12);
 }
 
 .atlas-button:active:not(:disabled) {
-  background: transparent;
   box-shadow: none;
-  transform: translateY(0);
 }
 
 .atlas-button-variant-1 {
@@ -39,7 +39,8 @@
 }
 
 .atlas-button-variant-1:hover:not(:disabled) {
-  background: rgba(248, 221, 164, 0.3);
+  background: var(--surface-3);
+  color: var(--main-color);
 }
 
 .atlas-button-variant-1:active:not(:disabled) {
@@ -53,7 +54,8 @@
 }
 
 .atlas-button-variant-3:hover:not(:disabled) {
-  background: rgba(129, 52, 5, 0.3);
+  background: var(--brand-primary-strong);
+  color: var(--on-brand);
 }
 
 .atlas-button-variant-3:active:not(:disabled) {
@@ -68,12 +70,18 @@
 }
 
 .atlas-button-variant-experience:hover:not(:disabled) {
-  background: rgba(129, 52, 5, 0.3);
+  background: var(--brand-primary-strong);
+  color: var(--on-brand);
 }
 
 .atlas-button-variant-experience:active:not(:disabled) {
   box-shadow: inset 0 0 0 1px var(--accent-color);
   color: var(--accent-color);
+}
+
+.atlas-button-variant-experience[aria-pressed="true"]:not(:disabled) {
+  background: var(--brand-primary-strong);
+  color: var(--on-brand);
 }
 
 .atlas-button-variant-back {
@@ -83,7 +91,8 @@
 }
 
 .atlas-button-variant-back:hover:not(:disabled) {
-  background: rgba(248, 221, 164, 0.3);
+  background: var(--surface-0);
+  color: var(--main-color);
 }
 
 .atlas-button-variant-back:active:not(:disabled) {

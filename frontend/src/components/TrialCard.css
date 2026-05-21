@@ -2,10 +2,12 @@
   width: min(1111px, 100%);
   border-radius: 12px;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.58), rgba(129, 52, 5, 0.58)),
+    linear-gradient(var(--main-overlay-strong), var(--main-overlay-strong)),
     var(--accent-color);
-  color: #ffffff;
+  color: var(--on-brand);
   padding: 24px;
+  touch-action: pan-y;
+  cursor: grab;
 }
 
 .trial-card-header-row {
@@ -23,7 +25,7 @@
 
 .trial-card-counter {
   font-weight: 700;
-  color: #fbe8c0;
+  color: var(--highlight-color);
 }
 
 .trial-card-grid {
@@ -35,7 +37,7 @@
 
 .trial-visual-box {
   min-height: 320px;
-  background: rgba(248, 221, 164, 0.28);
+  background: var(--participant-overlay);
   border-radius: 10px;
   padding: 16px;
 }
@@ -49,7 +51,7 @@
 .trial-match-reasons {
   margin-top: 16px;
   font-size: 0.95rem;
-  color: #fff0d4;
+  color: var(--highlight-color);
 }
 
 .trial-details-panel {
@@ -68,7 +70,7 @@
 .trial-detail-label {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #fbe7bb;
+  color: var(--highlight-color);
 }
 
 .trial-detail-value {

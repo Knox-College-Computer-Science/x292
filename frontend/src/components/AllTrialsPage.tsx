@@ -1,6 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { getMySavedTrials, listTrials, type Trial } from "../api";
 import HomeNavBar from "./HomeNavBar";
+import Tooltip from "./Tooltip";
+import TrialModeButton from "./TrialModeButton";
 import "./AllTrialsPage.css";
 
 type AllTrialsPageProps = {
@@ -66,7 +68,7 @@ export default function AllTrialsPage({
             participation: normalizedParticipation,
             requiresCompensation,
           },
-          authToken
+          authToken,
         ),
         authToken ? getMySavedTrials(authToken) : Promise.resolve([]),
       ]);
@@ -77,7 +79,7 @@ export default function AllTrialsPage({
       setError(
         err instanceof Error
           ? err.message
-          : "Could not load trials. Please try again."
+          : "Could not load trials. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -121,67 +123,94 @@ export default function AllTrialsPage({
         >
           <label>
             Condition
-            <input
-              value={condition}
-              onChange={(event) => setCondition(event.target.value)}
-              placeholder="e.g. diabetes"
-            />
+            <Tooltip label="Search by condition name (e.g., 'diabetes', 'cancer')">
+              <input
+                value={condition}
+                onChange={(event) => setCondition(event.target.value)}
+                placeholder="e.g. diabetes"
+              />
+            </Tooltip>
           </label>
 
           <label>
             Location
-            <input
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              placeholder="City, State"
-            />
+            <Tooltip label="Enter city and state (e.g., 'Boston, MA') or leave blank for any location">
+              <input
+                value={location}
+                onChange={(event) => setLocation(event.target.value)}
+                placeholder="City, State"
+              />
+            </Tooltip>
           </label>
 
           <label>
             Status
-            <select value={status} onChange={(event) => setStatus(event.target.value)}>
-              <option value="Recruiting">Recruiting</option>
-              <option value="Not yet recruiting">Not yet recruiting</option>
-              <option value="">Any</option>
-            </select>
+            <Tooltip label="Recruiting = actively enrolling participants now">
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+              >
+                <option value="Recruiting">Recruiting</option>
+                <option value="Not yet recruiting">Not yet recruiting</option>
+                <option value="">Any</option>
+              </select>
+            </Tooltip>
           </label>
 
           <label>
             Study Phase
-            <select value={phase} onChange={(event) => setPhase(event.target.value)}>
-              <option value="">Any</option>
-              <option value="Phase 1">Phase 1</option>
-              <option value="Phase 2">Phase 2</option>
-              <option value="Phase 3">Phase 3</option>
-              <option value="Phase 4">Phase 4</option>
-            </select>
+            <Tooltip label="Phase 1: Safety | Phase 2: Efficacy | Phase 3: Effectiveness | Phase 4: Long-term follow-up">
+              <select
+                value={phase}
+                onChange={(event) => setPhase(event.target.value)}
+              >
+                <option value="">Any</option>
+                <option value="Phase 1">Phase 1</option>
+                <option value="Phase 2">Phase 2</option>
+                <option value="Phase 3">Phase 3</option>
+                <option value="Phase 4">Phase 4</option>
+              </select>
+            </Tooltip>
           </label>
 
           <label>
             Participation
-            <select
-              value={participation}
-              onChange={(event) => setParticipation(event.target.value)}
-            >
-              <option value="Either">Either</option>
-              <option value="Remote">Remote</option>
-              <option value="In-person">In-person</option>
-            </select>
+            <Tooltip label="'Either' means you're open to both remote and in-person trials">
+              <select
+                value={participation}
+                onChange={(event) => setParticipation(event.target.value)}
+              >
+                <option value="Either">Either</option>
+                <option value="Remote">Remote</option>
+                <option value="In-person">In-person</option>
+              </select>
+            </Tooltip>
           </label>
 
           <label className="all-trials-checkbox">
-            <input
-              type="checkbox"
-              checked={requiresCompensation}
-              onChange={(event) => setRequiresCompensation(event.target.checked)}
-            />
+            <Tooltip label="Check to show only trials offering payment or incentives">
+              <input
+                type="checkbox"
+                checked={requiresCompensation}
+                onChange={(event) =>
+                  setRequiresCompensation(event.target.checked)
+                }
+              />
+            </Tooltip>
             Compensation only
           </label>
 
-          <button type="submit" className="atlas-button atlas-button-variant-3">
-            Apply filters
-          </button>
+          <Tooltip label="Press Enter or click to refresh trial list with selected filters">
+            <button
+              type="submit"
+              className="atlas-button atlas-button-variant-3"
+            >
+              Apply filters
+            </button>
+          </Tooltip>
+        </form>
 
+        <div className="all-trials-filter-actions">
           <button
             type="button"
             className="atlas-button atlas-button-variant-back"
@@ -189,14 +218,33 @@ export default function AllTrialsPage({
           >
             {showSavedOnly ? "Show all" : "Saved only"}
           </button>
-        </form>
+
+          <TrialModeButton mode="swipe" onClick={onNavigateFindTrials} />
+        </div>
 
         <div className="all-trials-up-next">
           <div className="all-trials-up-next-header">Up Next</div>
           {loading ? (
-            <div className="all-trials-message-row">Loading trials...</div>
+            Array.from({ length: 2 }, (_, index) => (
+              <div
+                key={`up-next-skeleton-${index}`}
+                className={`all-trials-up-next-entry all-trials-up-next-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
+                aria-hidden="true"
+              >
+                <div className="skeleton skeleton-line all-trials-skeleton-title" />
+                <div className="skeleton skeleton-line all-trials-skeleton-date" />
+              </div>
+            ))
           ) : error ? (
-            <div className="all-trials-message-row">{error}</div>
+            <div className="all-trials-message-row all-trials-message-row-transparent">
+              <div
+                className="state-card state-card-error all-trials-error-card"
+                role="alert"
+              >
+                <p className="state-card-title">Could not load trials</p>
+                <p className="state-card-message">{error}</p>
+              </div>
+            </div>
           ) : upNextTrials.length === 0 ? (
             <div className="all-trials-message-row">No trials found.</div>
           ) : (
@@ -227,12 +275,31 @@ export default function AllTrialsPage({
             <div className="all-trials-status-status-col">Status</div>
           </div>
           {loading ? (
-            <div className="all-trials-message-row">Loading trials...</div>
+            Array.from({ length: 6 }, (_, index) => (
+              <div
+                key={`status-skeleton-${index}`}
+                className={`all-trials-status-entry all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
+                aria-hidden="true"
+              >
+                <div className="skeleton skeleton-line all-trials-skeleton-title" />
+                <div className="skeleton skeleton-line all-trials-skeleton-meta" />
+                <div className="skeleton skeleton-block all-trials-skeleton-button" />
+              </div>
+            ))
           ) : error ? (
-            <div className="all-trials-message-row">{error}</div>
+            <div className="all-trials-message-row all-trials-message-row-transparent">
+              <div
+                className="state-card state-card-error all-trials-error-card"
+                role="alert"
+              >
+                <p className="state-card-title">Could not load trials</p>
+                <p className="state-card-message">{error}</p>
+              </div>
+            </div>
           ) : statusTrials.length === 0 ? (
             <div className="all-trials-message-row">
-              No trials matched the selected filters. Try broadening your criteria.
+              No trials matched the selected filters. Try broadening your
+              criteria.
             </div>
           ) : (
             statusTrials.map((trial, index) => (
@@ -241,7 +308,9 @@ export default function AllTrialsPage({
                 className={`all-trials-status-entry all-trials-status-entry-${index % 2 === 0 ? "accent-40" : "accent-30"}`}
               >
                 <div className="all-trials-status-title">{trial.title}</div>
-                <div className="all-trials-status-date">{formatTrialMeta(trial)}</div>
+                <div className="all-trials-status-date">
+                  {formatTrialMeta(trial)}
+                </div>
                 <button
                   type="button"
                   className="atlas-button all-trials-status-more-details"

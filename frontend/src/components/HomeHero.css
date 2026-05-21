@@ -1,32 +1,44 @@
 .home-hero-stage {
-  margin-top: 95px;
-  width: 1440px;
-  height: 798px;
+  margin-top: -55px;
+  width: 100%;
+  height: 928px;
   display: grid;
   grid-template-columns: 1fr;
+  position: relative;
 }
 
 .hero-box {
   grid-area: 1 / 1;
   width: 745px;
-  height: 798px;
+  height: 928px;
   margin-left: 607px;
   padding: 0;
-  background:
-    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
-    var(--accent-color);
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transform: translateY(-110px);
 }
 
 .hero-title {
   grid-area: 1 / 1;
   margin: 0;
   margin-left: 125px;
-  margin-top: 329px;
+  margin-top: 205px;
   font-size: 200px;
   font-weight: 700;
   line-height: 200px;
   letter-spacing: 1px;
-  color: var(--accent-color);
+  color: var(--on-brand);
   white-space: normal;
   max-width: 1200px;
+  position: relative;
+  z-index: 1;
 }

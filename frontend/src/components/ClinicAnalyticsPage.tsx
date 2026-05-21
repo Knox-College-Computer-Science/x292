@@ -11,7 +11,7 @@ type ClinicAnalyticsPageProps = {
   onNavigateProfile: () => void;
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
-  onNavigateMoreDetails: () => void;
+  onNavigateMoreDetails: (trialId: string) => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
 };
 

@@ -1,12 +1,12 @@
 .clinic-more-analytics-page {
-  width: 1440px;
+  width: 100%;
   min-height: 2334px;
   margin: 0 auto;
   background: var(--accent-color);
 }
 
 .clinic-more-analytics-content {
-  width: 1280px;
+  width: min(1280px, 94%);
   margin: 67px auto 0;
   display: flex;
   flex-direction: column;
@@ -14,18 +14,18 @@
 }
 
 .clinic-more-analytics-card {
-  width: 1280px;
+  width: min(1280px, 100%);
   min-height: 740px;
   border-radius: 34px;
   padding: 34px 68px;
   background:
-    linear-gradient(rgba(129, 52, 5, 0.44), rgba(129, 52, 5, 0.44)),
+    linear-gradient(var(--clinic-overlay), var(--clinic-overlay)),
     var(--accent-color);
 }
 
 .clinic-more-analytics-title {
   margin: 0;
-  color: #ffffff;
+  color: var(--on-brand);
   font-size: 58px;
   font-weight: 700;
   line-height: 1;
@@ -40,7 +40,7 @@
 
 .clinic-more-analytics-left,
 .clinic-more-analytics-right {
-  color: #ffffff;
+  color: var(--on-brand);
   font-size: 58px;
   font-weight: 700;
   line-height: 1;

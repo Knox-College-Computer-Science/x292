@@ -1,5 +1,5 @@
 ﻿.profile-page {
-  width: min(1440px, 100%);
+  width: 100%;
   min-height: 100vh;
   margin: 0 auto;
   background: var(--accent-color);
@@ -7,7 +7,7 @@
 
 .profile-page-content {
   width: min(1111px, 94%);
-  margin: 46px auto 0;
+  margin: 67px auto 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,7 +29,7 @@
 .profile-auth-warning {
   width: min(640px, 100%);
   border-radius: 12px;
-  background: rgba(129, 52, 5, 0.14);
+  background: var(--main-tint);
   padding: 24px;
   text-align: center;
   color: var(--main-color);
@@ -43,9 +43,44 @@
 }
 
 .profile-message-error {
-  color: #8b1f00;
+  color: var(--danger-color);
 }
 
 .profile-message-success {
-  color: #1f5f1b;
+  color: var(--success-color);
+}
+
+.profile-card-skeleton {
+  width: min(1111px, 100%);
+  border-radius: 16px;
+  background: var(--main-tint);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.profile-card-skeleton-line {
+  height: 16px;
+  width: 76%;
+}
+
+.profile-card-skeleton-line-wide {
+  width: 92%;
+}
+
+.profile-card-skeleton-line-short {
+  width: 58%;
+}
+
+.profile-card-skeleton-block {
+  width: 100%;
+  min-height: 280px;
+}
+
+.profile-submit-skeleton {
+  margin-top: 17px;
+  width: 165px;
+  height: 50px;
+  border-radius: 8px;
 }

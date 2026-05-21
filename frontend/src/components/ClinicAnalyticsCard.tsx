@@ -1,11 +1,12 @@
 ﻿import type { TrialAnalyticsStats } from "../api";
 import "./ClinicAnalyticsCard.css";
+import useSwipeActions from "./useSwipeActions";
 
 type ClinicAnalyticsCardProps = {
   stats: TrialAnalyticsStats | null;
   isLoading: boolean;
   error: string | null;
-  onNavigateMoreDetails: () => void;
+  onNavigateMoreDetails: (trialId: string) => void;
 };
 
 export default function ClinicAnalyticsCard({
@@ -21,25 +22,55 @@ export default function ClinicAnalyticsCard({
   const topDropOff = stats
     ? Object.entries(stats.drop_off_by_category).sort((a, b) => b[1] - a[1])[0]
     : null;
+  const topTrial = stats?.top_trials?.[0] ?? null;
+
+  const swipeActions = useSwipeActions({
+    onSwipeRight: () => {
+      if (topTrial) {
+        onNavigateMoreDetails(topTrial.id);
+      }
+    },
+  });
 
   return (
     <section
       className="clinic-analytics-card"
-      aria-label="Clinic analytics details"
+      aria-label="Clinic analytics details. Swipe right for more info."
+      {...swipeActions}
     >
       <h2 className="clinic-analytics-card-title">Admin Analytics Dashboard</h2>
 
       <div className="clinic-analytics-card-grid">
-        <div className="clinic-analytics-visual-box" />
+        <div className="clinic-analytics-visual-box">
+          {isLoading ? (
+            <div
+              className="clinic-analytics-visual-skeleton"
+              aria-hidden="true"
+            >
+              <div className="skeleton skeleton-line clinic-analytics-visual-skeleton-line clinic-analytics-visual-skeleton-line-wide" />
+              <div className="skeleton skeleton-line clinic-analytics-visual-skeleton-line" />
+              <div className="skeleton skeleton-line clinic-analytics-visual-skeleton-line clinic-analytics-visual-skeleton-line-short" />
+            </div>
+          ) : null}
+        </div>
 
         <div className="clinic-analytics-details-panel">
           {isLoading ? (
-            <div className="clinic-analytics-detail-row">
-              <span className="clinic-analytics-detail-label">Loading analytics...</span>
+            <div
+              className="clinic-analytics-details-skeleton"
+              aria-hidden="true"
+            >
+              <div className="skeleton skeleton-line clinic-analytics-detail-skeleton-line" />
+              <div className="skeleton skeleton-line clinic-analytics-detail-skeleton-line" />
+              <div className="skeleton skeleton-line clinic-analytics-detail-skeleton-line" />
+              <div className="skeleton skeleton-line clinic-analytics-detail-skeleton-line clinic-analytics-detail-skeleton-line-wide" />
+              <div className="skeleton skeleton-line clinic-analytics-detail-skeleton-line" />
+              <div className="skeleton skeleton-line clinic-analytics-detail-skeleton-line clinic-analytics-detail-skeleton-line-short" />
             </div>
           ) : error ? (
-            <div className="clinic-analytics-detail-row">
-              <span className="clinic-analytics-detail-label">{error}</span>
+            <div className="state-card state-card-error clinic-analytics-error-card">
+              <p className="state-card-title">Could not load analytics</p>
+              <p className="state-card-message">{error}</p>
             </div>
           ) : stats ? (
             <>
@@ -60,7 +91,8 @@ export default function ClinicAnalyticsCard({
               </div>
               <div className="clinic-analytics-detail-row">
                 <span className="clinic-analytics-detail-label">
-                  Most Selected Category: {topCategory ? topCategory[0] : "None"}
+                  Most Selected Category:{" "}
+                  {topCategory ? topCategory[0] : "None"}
                 </span>
               </div>
               <div className="clinic-analytics-detail-row">
@@ -70,7 +102,13 @@ export default function ClinicAnalyticsCard({
               </div>
               <div className="clinic-analytics-detail-row">
                 <span className="clinic-analytics-detail-label">
-                  Highest Drop-off Category: {topDropOff ? topDropOff[0] : "None"}
+                  Highest Drop-off Category:{" "}
+                  {topDropOff ? topDropOff[0] : "None"}
+                </span>
+              </div>
+              <div className="clinic-analytics-detail-row">
+                <span className="clinic-analytics-detail-label">
+                  Top Trial: {topTrial ? topTrial.title : "None"}
                 </span>
               </div>
             </>
@@ -80,7 +118,8 @@ export default function ClinicAnalyticsCard({
             <button
               type="button"
               className="atlas-button atlas-button-variant-1 clinic-analytics-more-info-button"
-              onClick={onNavigateMoreDetails}
+              onClick={() => topTrial && onNavigateMoreDetails(topTrial.id)}
+              disabled={isLoading || !stats || Boolean(error) || !topTrial}
             >
               More Info
             </button>

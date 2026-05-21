@@ -1,6 +1,35 @@
 :root {
-  --main-color: #813405;
-  --accent-color: #f8dda4;
+  --brand-primary: #2f6f73;
+  --brand-primary-strong: #24515a;
+  --brand-participant: #7fa58d;
+  --brand-highlight: #e8ddc9;
+  --surface-0: #fffdf9;
+  --surface-1: #f8f6f2;
+  --surface-2: #eef5f3;
+  --surface-3: #fff8ec;
+  --text-strong: #24323a;
+  --text-muted: #5d6b72;
+  --success-color: #5e8c61;
+  --warning-color: #c48a3a;
+  --danger-color: #b55b57;
+  --on-brand: #fffdf9;
+  --main-color: var(--brand-primary);
+  --accent-color: var(--surface-1);
+  --clinic-accent-color: var(--brand-primary-strong);
+  --participant-accent-color: var(--brand-participant);
+  --highlight-color: var(--brand-highlight);
+  --main-tint: rgba(47, 111, 115, 0.14);
+  --main-overlay: rgba(47, 111, 115, 0.44);
+  --main-overlay-strong: rgba(47, 111, 115, 0.58);
+  --clinic-overlay: rgba(36, 81, 90, 0.44);
+  --participant-overlay: rgba(127, 165, 141, 0.36);
+  --highlight-overlay: rgba(232, 221, 201, 0.4);
+  --highlight-overlay-soft: rgba(232, 221, 201, 0.28);
+  --surface-border: rgba(36, 50, 58, 0.16);
+  --focus-ring: rgba(47, 111, 115, 0.34);
+  --shadow-color: rgba(36, 50, 58, 0.16);
+  --skeleton-base: rgba(255, 253, 249, 0.2);
+  --skeleton-highlight: rgba(255, 253, 249, 0.42);
 }
 
 * {
@@ -10,11 +39,78 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--main-color);
-  color: #111;
+  background:
+    radial-gradient(circle at top, rgba(127, 165, 141, 0.16), transparent 42%),
+    linear-gradient(180deg, var(--surface-0), var(--surface-2));
+  color: var(--text-strong);
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
 button {
   font: inherit;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--skeleton-base);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--skeleton-highlight) 45%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 16px;
+  border-radius: 999px;
+}
+
+.skeleton-block {
+  border-radius: 12px;
+}
+
+.state-card {
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.state-card-error {
+  background: rgba(181, 91, 87, 0.16);
+  border: 1px solid rgba(181, 91, 87, 0.42);
+  color: var(--on-brand);
+}
+
+.state-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.state-card-message {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
 }

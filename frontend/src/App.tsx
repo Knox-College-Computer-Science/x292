@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { loginUser, registerUser, type UserProfile } from "./api";
 import AllTrialsPage from "./components/AllTrialsPage";
 import BlankPage from "./components/BlankPage";
@@ -37,13 +37,16 @@ type SessionState = {
   profileCompleted: boolean;
 };
 
+type StoredNavigationState = {
+  view: AppView;
+  experience: ExperienceMode;
+  selectedTrialId: string | null;
+  clinicMoreBackView: "analytics" | "all-trials" | "clinic-trial-card";
+};
+
 const SESSION_STORAGE_KEY = "atlas_session";
 const REMEMBERED_EMAIL_KEY = "atlas_remembered_email";
-<<<<<<< Updated upstream
-=======
 const NAVIGATION_STORAGE_KEY = "atlas_navigation";
-const PROFILE_ACCESSED_KEY = "atlas_profile_accessed_this_session";
-const CLINIC_PROFILE_ACCESSED_KEY = "atlas_clinic_profile_accessed_this_session";
 const APP_VIEWS: AppView[] = [
   "home",
   "login",
@@ -74,7 +77,6 @@ function isClinicBackView(
     value === "clinic-trial-card"
   );
 }
->>>>>>> Stashed changes
 
 function readStoredSession(): SessionState | null {
   const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
@@ -98,30 +100,386 @@ function persistSession(session: SessionState | null) {
   window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 
+function readStoredNavigation(): StoredNavigationState | null {
+  const raw = window.localStorage.getItem(NAVIGATION_STORAGE_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return parseNavigationState(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+function persistNavigation(state: StoredNavigationState) {
+  window.localStorage.setItem(NAVIGATION_STORAGE_KEY, JSON.stringify(state));
+}
+
+function parseNavigationState(value: unknown): StoredNavigationState | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const parsed = value as Partial<StoredNavigationState>;
+  if (
+    !parsed.view ||
+    !parsed.experience ||
+    !parsed.clinicMoreBackView ||
+    !isAppView(parsed.view) ||
+    !isExperienceMode(parsed.experience) ||
+    !isClinicBackView(parsed.clinicMoreBackView)
+  ) {
+    return null;
+  }
+
+  return {
+    view: parsed.view,
+    experience: parsed.experience,
+    selectedTrialId:
+      typeof parsed.selectedTrialId === "string"
+        ? parsed.selectedTrialId
+        : null,
+    clinicMoreBackView: parsed.clinicMoreBackView,
+  };
+}
+
+function readInitialNavigation(): StoredNavigationState | null {
+  const fromPath = readNavigationFromPath(window.location.pathname);
+  if (fromPath) {
+    return fromPath;
+  }
+
+  const fromHistory = parseNavigationState(window.history.state);
+  if (fromHistory) {
+    return fromHistory;
+  }
+  return readStoredNavigation();
+}
+
+function isSameNavigationState(
+  left: StoredNavigationState,
+  right: StoredNavigationState,
+): boolean {
+  return (
+    left.view === right.view &&
+    left.experience === right.experience &&
+    left.selectedTrialId === right.selectedTrialId &&
+    left.clinicMoreBackView === right.clinicMoreBackView
+  );
+}
+
+function buildPathFromNavigation(state: StoredNavigationState): string {
+  if (state.view === "home") {
+    return "/";
+  }
+
+  if (state.experience === "clinics") {
+    if (state.view === "login") {
+      return "/clinic/login";
+    }
+    if (state.view === "profile") {
+      return "/clinic/profile";
+    }
+    if (state.view === "analytics") {
+      return "/clinic/analytics";
+    }
+    if (state.view === "clinic-analytics-more") {
+      return "/clinic/analytics/more";
+    }
+    if (state.view === "all-trials") {
+      return "/clinic/trials";
+    }
+    if (state.view === "clinic-trial-card") {
+      return "/clinic/trials/new";
+    }
+    return "/clinic";
+  }
+
+  if (state.view === "login") {
+    return "/participant/login";
+  }
+  if (state.view === "profile") {
+    return "/participant/profile";
+  }
+  if (state.view === "analytics") {
+    return "/participant/analytics";
+  }
+  if (state.view === "analytics-result-uses") {
+    return "/participant/analytics/results";
+  }
+  if (state.view === "trials") {
+    return "/participant/trials/swipe";
+  }
+  if (state.view === "all-trials") {
+    return "/participant/trials/all";
+  }
+  if (state.view === "trial-more-details") {
+    return state.selectedTrialId
+      ? `/participant/trials/${encodeURIComponent(state.selectedTrialId)}`
+      : "/participant/trials/details";
+  }
+
+  return "/participant";
+}
+
+function readNavigationFromPath(
+  pathname: string,
+): StoredNavigationState | null {
+  const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+  const segments = normalizedPath.split("/").filter(Boolean);
+
+  if (normalizedPath === "/") {
+    return {
+      view: "home",
+      experience: "participants",
+      selectedTrialId: null,
+      clinicMoreBackView: "all-trials",
+    };
+  }
+
+  if (segments[0] === "clinic") {
+    if (segments.length === 1) {
+      return {
+        view: "home",
+        experience: "clinics",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+
+    if (segments[1] === "login") {
+      return {
+        view: "login",
+        experience: "clinics",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+
+    if (segments[1] === "profile") {
+      return {
+        view: "profile",
+        experience: "clinics",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+
+    if (segments[1] === "analytics") {
+      if (segments[2] === "more") {
+        return {
+          view: "clinic-analytics-more",
+          experience: "clinics",
+          selectedTrialId: null,
+          clinicMoreBackView: "analytics",
+        };
+      }
+
+      return {
+        view: "analytics",
+        experience: "clinics",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+
+    if (segments[1] === "trials") {
+      if (segments[2] === "new") {
+        return {
+          view: "clinic-trial-card",
+          experience: "clinics",
+          selectedTrialId: null,
+          clinicMoreBackView: "all-trials",
+        };
+      }
+
+      return {
+        view: "all-trials",
+        experience: "clinics",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+  }
+
+  if (segments[0] === "participant") {
+    if (segments.length === 1) {
+      return {
+        view: "home",
+        experience: "participants",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+
+    if (segments[1] === "login") {
+      return {
+        view: "login",
+        experience: "participants",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+
+    if (segments[1] === "profile") {
+      return {
+        view: "profile",
+        experience: "participants",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+
+    if (segments[1] === "analytics") {
+      if (segments[2] === "results") {
+        return {
+          view: "analytics-result-uses",
+          experience: "participants",
+          selectedTrialId: null,
+          clinicMoreBackView: "all-trials",
+        };
+      }
+
+      return {
+        view: "analytics",
+        experience: "participants",
+        selectedTrialId: null,
+        clinicMoreBackView: "all-trials",
+      };
+    }
+
+    if (segments[1] === "trials") {
+      if (segments[2] === "all") {
+        return {
+          view: "all-trials",
+          experience: "participants",
+          selectedTrialId: null,
+          clinicMoreBackView: "all-trials",
+        };
+      }
+
+      if (segments[2] === "swipe") {
+        return {
+          view: "trials",
+          experience: "participants",
+          selectedTrialId: null,
+          clinicMoreBackView: "all-trials",
+        };
+      }
+
+      if (segments[2] === "details") {
+        return {
+          view: "trial-more-details",
+          experience: "participants",
+          selectedTrialId: null,
+          clinicMoreBackView: "all-trials",
+        };
+      }
+
+      if (segments[2]) {
+        return {
+          view: "trial-more-details",
+          experience: "participants",
+          selectedTrialId: decodeURIComponent(segments[2]),
+          clinicMoreBackView: "all-trials",
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
 export default function App() {
-  const [view, setView] = useState<AppView>("home");
-  const [selectedTrialId, setSelectedTrialId] = useState<string | null>(null);
-  const [experience, setExperience] = useState<ExperienceMode>("participants");
+  const initialNavigation = useMemo(() => readInitialNavigation(), []);
+  const [view, setView] = useState<AppView>(initialNavigation?.view ?? "home");
+  const [selectedTrialId, setSelectedTrialId] = useState<string | null>(
+    initialNavigation?.selectedTrialId ?? null,
+  );
+  const [experience, setExperience] = useState<ExperienceMode>(
+    initialNavigation?.experience ?? "participants",
+  );
   const [clinicMoreBackView, setClinicMoreBackView] = useState<
-    "all-trials" | "clinic-trial-card"
-  >("all-trials");
+    "analytics" | "all-trials" | "clinic-trial-card"
+  >(initialNavigation?.clinicMoreBackView ?? "all-trials");
   const [session, setSession] = useState<SessionState | null>(() =>
-    readStoredSession()
+    readStoredSession(),
   );
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
   const rememberedEmail = useMemo(
     () => window.localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? undefined,
-    []
+    [],
   );
+  const hasSyncedHistoryRef = useRef(false);
+  const isApplyingPopStateRef = useRef(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view, experience]);
 
+  useEffect(() => {
+    const navigationState: StoredNavigationState = {
+      view,
+      experience,
+      selectedTrialId,
+      clinicMoreBackView,
+    };
+    const nextPath = buildPathFromNavigation(navigationState);
+
+    persistNavigation(navigationState);
+
+    if (!hasSyncedHistoryRef.current) {
+      window.history.replaceState(navigationState, "", nextPath);
+      hasSyncedHistoryRef.current = true;
+      return;
+    }
+
+    if (isApplyingPopStateRef.current) {
+      isApplyingPopStateRef.current = false;
+      window.history.replaceState(navigationState, "", nextPath);
+      return;
+    }
+
+    const currentHistoryState = parseNavigationState(window.history.state);
+    if (
+      currentHistoryState &&
+      isSameNavigationState(currentHistoryState, navigationState) &&
+      window.location.pathname === nextPath
+    ) {
+      return;
+    }
+
+    window.history.pushState(navigationState, "", nextPath);
+  }, [view, experience, selectedTrialId, clinicMoreBackView]);
+
+  useEffect(() => {
+    function handlePopState(event: PopStateEvent) {
+      const nextNavigation =
+        parseNavigationState(event.state) ??
+        readNavigationFromPath(window.location.pathname);
+      if (!nextNavigation) {
+        return;
+      }
+
+      isApplyingPopStateRef.current = true;
+      setView(nextNavigation.view);
+      setExperience(nextNavigation.experience);
+      setSelectedTrialId(nextNavigation.selectedTrialId);
+      setClinicMoreBackView(nextNavigation.clinicMoreBackView);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   async function handleAuthenticate(payload: {
-    mode: "sign-in" | "create" | "reset-password";
+    mode: "sign-in" | "create";
     email: string;
     password: string;
     rememberEmail: boolean;
@@ -153,12 +511,6 @@ export default function App() {
         window.localStorage.removeItem(REMEMBERED_EMAIL_KEY);
       }
 
-      // Mark profile as accessed in this session
-      const profileKey = experience === "clinics" 
-        ? CLINIC_PROFILE_ACCESSED_KEY 
-        : PROFILE_ACCESSED_KEY;
-      window.sessionStorage.setItem(profileKey, "true");
-
       if (payload.mode === "create" || !response.profile_completed) {
         setView("profile");
       } else {
@@ -166,11 +518,18 @@ export default function App() {
       }
     } catch (error) {
       setAuthError(
-        error instanceof Error ? error.message : "Could not authenticate."
+        error instanceof Error ? error.message : "Could not authenticate.",
       );
     } finally {
       setAuthLoading(false);
     }
+  }
+
+  function handleLogout() {
+    setSession(null);
+    persistSession(null);
+    // Return to home after logout
+    setView("home");
   }
 
   function handleProfileSaved(profile: UserProfile) {
@@ -194,22 +553,7 @@ export default function App() {
     return (
       <HomePage
         selectedExperience={experience}
-        onNavigateProfile={() => {
-          // Check if profile was accessed in this session
-          const profileKey = experience === "clinics" 
-            ? CLINIC_PROFILE_ACCESSED_KEY 
-            : PROFILE_ACCESSED_KEY;
-          const hasAccessed = window.sessionStorage.getItem(profileKey);
-          
-          if (!hasAccessed) {
-            // First time - show login page, mark as accessed
-            window.sessionStorage.setItem(profileKey, "true");
-            setView("login");
-          } else {
-            // Subsequent times - go directly to profile/preferences
-            setView("profile");
-          }
-        }}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateLogin={() => setView("login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
@@ -224,7 +568,7 @@ export default function App() {
       <LoginPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -241,7 +585,7 @@ export default function App() {
       <ClinicLoginPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -259,12 +603,13 @@ export default function App() {
         authToken={session?.token ?? null}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("trials")}
         onNavigateLogin={() => setView("login")}
         onSelectExperience={setExperience}
         onProfileSaved={handleProfileSaved}
+        onLogout={handleLogout}
       />
     );
   }
@@ -274,10 +619,11 @@ export default function App() {
       <ClinicProfileSetupPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
+        onLogout={handleLogout}
       />
     );
   }
@@ -288,9 +634,10 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
+        onNavigateFindTrials={() => setView("trials")}
         onNavigateMoreDetails={(trialId) => {
           setSelectedTrialId(trialId);
           setView("trial-more-details");
@@ -307,7 +654,7 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -321,7 +668,7 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateFindTrials={() => setView("trials")}
@@ -339,13 +686,13 @@ export default function App() {
       <ClinicAllTrialsPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateAddTrials={() => setView("clinic-trial-card")}
-        onNavigateMoreDetails={() => {
-          setClinicMoreBackView("all-trials");
-          setView("clinic-analytics-more");
+        onNavigateMoreDetails={(trialId) => {
+          setSelectedTrialId(trialId);
+          setView("trial-more-details");
         }}
         onSelectExperience={setExperience}
       />
@@ -357,10 +704,25 @@ export default function App() {
       <ClinicTrialCardPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSubmitTrial={() => setView("all-trials")}
+        onSelectExperience={setExperience}
+      />
+    );
+  }
+
+  if (view === "trial-more-details" && experience === "clinics") {
+    return (
+      <TrialMoreDetailsPage
+        trialId={selectedTrialId}
+        authToken={session?.token}
+        selectedExperience={experience}
+        onNavigateHome={() => setView("home")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateAnalytics={() => setView("analytics")}
+        onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
       />
     );
@@ -372,7 +734,7 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateMoreDetails={() => setView("analytics-result-uses")}
@@ -390,10 +752,13 @@ export default function App() {
       <ClinicAnalyticsPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
-        onNavigateMoreDetails={() => setView("clinic-analytics-more")}
+        onNavigateMoreDetails={(trialId) => {
+          setSelectedTrialId(trialId);
+          setView("trial-more-details");
+        }}
         onSelectExperience={setExperience}
       />
     );
@@ -405,7 +770,7 @@ export default function App() {
         label="Study result uses details (to be filled in by clinic)"
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -418,7 +783,7 @@ export default function App() {
       <ClinicMoreAnalyticsPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView("profile")}
+        onNavigateProfile={() => setView(session ? "profile" : "login")}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateBack={() => setView(clinicMoreBackView)}
@@ -432,7 +797,7 @@ export default function App() {
       label={pageLabel}
       selectedExperience={experience}
       onNavigateHome={() => setView("home")}
-      onNavigateProfile={() => setView("profile")}
+      onNavigateProfile={() => setView(session ? "profile" : "login")}
       onNavigateAnalytics={() => setView("analytics")}
       onNavigateAllTrials={() => setView("all-trials")}
       onSelectExperience={setExperience}
