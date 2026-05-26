@@ -1,34 +1,103 @@
 # Class Project Starter
 
-A full-stack starter codebase with:
+Full-stack class project starter:
 
 - FastAPI + SQLite backend
-- React + TypeScript frontend
+- React + TypeScript (Vite) frontend
 
-## Structure
+## Who this is for
 
-- backend/ — Python API and database models
-- frontend/ — Vite React client
+If you are new to this project, this README gives you everything needed to:
 
-## Backend setup
+- run the app locally
+- understand where code lives
+- make and verify changes safely
 
-1. Create and activate a Python virtual environment in backend/.
-2. Install dependencies:
-   - pip install -r requirements.txt
-3. Run the API from backend/:
-   - uvicorn app.main:app --reload
+## Project structure
 
-The API will be available at http://localhost:8000.
+- backend/ — API, models, services, database code
+- frontend/ — React app
+- TESTING_GUIDE.md — automated testing notes
+- MANUAL_TESTING_GUIDE.md — manual QA checklist
 
-## Frontend setup
+## Prerequisites
 
-1. Install dependencies in frontend/.
-2. Run the client:
-   - npm run dev
+- Python 3.10+
+- Node.js 18+
+- npm 9+
 
-The frontend will be available at http://localhost:5173.
+## Quick start
+
+### 1) Backend
+
+From the repo root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+cd backend
+uvicorn app.main:app --reload
+```
+
+Backend runs at `http://127.0.0.1:8000`.
+
+### 2) Frontend
+
+In a new terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs at `http://localhost:5173`.
+
+## Daily development workflow
+
+1. Start backend and frontend in separate terminals.
+2. Make your code changes.
+3. Verify backend still runs (`/health`) and frontend still loads.
+4. Run tests/checks before committing.
+
+### Backend checks
+
+From `backend/`:
+
+```bash
+pytest
+```
+
+### Frontend checks
+
+From `frontend/`:
+
+```bash
+npm run build
+```
+
+## Where to make changes
+
+- Backend API routes: `backend/app/routes/`
+- Backend domain logic/services: `backend/app/services/`
+- Backend models/schemas: `backend/app/models.py` and `backend/app/schemas.py`
+- Frontend pages/components: `frontend/src/components/`
+- Frontend API client/types: `frontend/src/api.ts`
+
+## API and docs
+
+- Health check: `http://127.0.0.1:8000/health`
+- Interactive API docs: `http://127.0.0.1:8000/docs`
+
+## Troubleshooting
+
+- If frontend cannot reach backend, confirm backend is running on `127.0.0.1:8000`.
+- If dependency install fails, delete and recreate virtual env / reinstall npm packages.
+- If database state is broken during local testing, remove `backend/app_v2.db` and restart backend.
 
 ## Notes
 
-- SQLite data is stored in backend/app.db.
-- Update the frontend API URL in frontend/src/api.ts if the backend port changes.
+- Frontend API base URL is set in `frontend/src/api.ts`.
+- Backend CORS allows `http://localhost:5173` and `http://127.0.0.1:5173`.
+- SQLite DB defaults to `backend/app_v2.db` (override with `DATABASE_FILENAME`).
