@@ -3,7 +3,7 @@
 type ClinicLoginComponentProps = {
   rememberedEmail?: string;
   onAuthenticate: (payload: {
-    mode: "sign-in" | "create";
+    mode: "sign-in" | "create" | "reset-password";
     email: string;
     password: string;
     organization?: string;
