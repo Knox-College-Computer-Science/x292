@@ -19,6 +19,7 @@ type ClinicLoginPageProps = {
   }) => void | Promise<void>;
   isLoading?: boolean;
   errorMessage?: string | null;
+  successMessage?: string | null;
 };
 
 export default function ClinicLoginPage({
@@ -32,6 +33,7 @@ export default function ClinicLoginPage({
   onAuthenticate,
   isLoading,
   errorMessage,
+  successMessage,
 }: ClinicLoginPageProps) {
   return (
     <main className="login-page">
@@ -50,6 +52,7 @@ export default function ClinicLoginPage({
           onAuthenticate={onAuthenticate}
           isLoading={isLoading}
           errorMessage={errorMessage}
+          successMessage={successMessage}
         />
       </section>
     </main>

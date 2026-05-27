@@ -57,6 +57,23 @@ def login(payload: schemas.UserLogin, db: Session = Depends(get_db)):
     }
 
 
+@router.post("/auth/reset-password", response_model=schemas.MessageResponse)
+def reset_password(payload: schemas.PasswordResetRequest, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Account not found for that email")
+
+    if payload.role and payload.role in {"user", "clinic"} and user.role != payload.role:
+        raise HTTPException(
+            status_code=400,
+            detail="This account belongs to a different experience mode",
+        )
+
+    user.hashed_password = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Password reset successful. Please sign in with your new password."}
+
+
 @router.get("/users/me", response_model=schemas.UserProfileResponse)
 def get_my_profile(
     current_user: models.User = Depends(get_current_user),

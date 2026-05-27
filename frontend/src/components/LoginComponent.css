@@ -9,31 +9,21 @@
   box-shadow: 0 16px 40px var(--shadow-color);
 }
 
-.login-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
 .login-title {
-  margin: 0;
+  margin: 0 0 18px;
   font-size: clamp(1.8rem, 1.4rem + 1.2vw, 2.4rem);
   color: var(--participant-accent-color);
-  white-space: pre-line;
 }
 
 .login-logo-placeholder {
-  width: 156px;
-  height: 156px;
-  display: block;
-  object-fit: contain;
-  object-position: center;
-  flex: 0 0 auto;
+  width: 78px;
+  height: 78px;
+  margin-top: 18px;
+  background: var(--accent-color);
 }
 
 .login-form {
-  margin-top: 20px;
+  margin-top: 28px;
 }
 
 .login-field-group {
@@ -72,7 +62,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 16px;
   font-size: 0.95rem;
 }
 
@@ -89,8 +78,8 @@
   text-decoration: underline;
   cursor: pointer;
   padding: 0;
-  margin-top: 8px;
-  text-align: left;
+  margin: 0;
+  text-align: right;
 }
 
 .login-forgot-password:hover {
@@ -112,13 +101,44 @@
 .login-actions {
   margin-top: 28px;
   display: flex;
-  justify-content: flex-end;
-  gap: 16px;
+  justify-content: center;
 }
 
-.login-create-account,
+.login-options-row {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.login-primary-action {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.login-secondary-row {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.login-link-button {
+  background: none;
+  border: none;
+  color: var(--participant-accent-color);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+
 .login-next {
-  min-width: 180px;
+  min-width: 220px;
   height: 50px;
 }
 
@@ -127,23 +147,21 @@
     padding: 24px 18px;
   }
 
-  .login-header {
+  .login-title-row {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .login-logo-placeholder {
-    width: 120px;
-    height: 120px;
-  }
-
-  .login-actions {
+  .login-options-row {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
-  .login-create-account,
   .login-next {
     width: 100%;
+  }
+
+  .login-secondary-row {
+    flex-wrap: wrap;
   }
 }

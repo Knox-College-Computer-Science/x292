@@ -1,4 +1,4 @@
-﻿import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import "./LoginComponent.css";
 import Tooltip from "./Tooltip";
 import owlFull from "../assets/owl-full.png";

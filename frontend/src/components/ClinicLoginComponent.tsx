@@ -11,6 +11,7 @@ type ClinicLoginComponentProps = {
   }) => void | Promise<void>;
   isLoading?: boolean;
   errorMessage?: string | null;
+  successMessage?: string | null;
 };
 
 export default function ClinicLoginComponent(props: ClinicLoginComponentProps) {

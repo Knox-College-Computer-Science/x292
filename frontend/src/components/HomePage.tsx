@@ -8,7 +8,6 @@ type HomePageProps = {
   selectedExperience: "clinics" | "participants";
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
-  onNavigateLogin: () => void;
   onNavigateAnalytics: () => void;
   onNavigateAllTrials: () => void;
   onSelectExperience: (experience: "clinics" | "participants") => void;
@@ -18,7 +17,6 @@ export default function HomePage({
   selectedExperience,
   onNavigateHome,
   onNavigateProfile,
-  onNavigateLogin,
   onNavigateAnalytics,
   onNavigateAllTrials,
   onSelectExperience,
@@ -34,7 +32,7 @@ export default function HomePage({
         onSelectExperience={onSelectExperience}
       />
       <HomeHero selectedExperience={selectedExperience} />
-      <HomeCtaSection onNavigateLogin={onNavigateLogin} />
+      <HomeCtaSection />
     </main>
   );
 }

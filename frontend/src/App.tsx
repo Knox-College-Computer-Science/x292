@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { loginUser, registerUser, type UserProfile } from "./api";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { loginUser, registerUser, resetPassword, type UserProfile } from "./api";
 import AllTrialsPage from "./components/AllTrialsPage";
 import BlankPage from "./components/BlankPage";
 import ClinicAllTrialsPage from "./components/ClinicAllTrialsPage";
@@ -79,7 +79,7 @@ function isClinicBackView(
 }
 
 function readStoredSession(): SessionState | null {
-  const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+  const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
   if (!raw) {
     return null;
   }
@@ -93,11 +93,11 @@ function readStoredSession(): SessionState | null {
 
 function persistSession(session: SessionState | null) {
   if (!session) {
-    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
     return;
   }
 
-  window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 
 function readStoredNavigation(): StoredNavigationState | null {
@@ -409,6 +409,7 @@ export default function App() {
   );
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
 
   const rememberedEmail = useMemo(
     () => window.localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? undefined,
@@ -416,10 +417,25 @@ export default function App() {
   );
   const hasSyncedHistoryRef = useRef(false);
   const isApplyingPopStateRef = useRef(false);
+  const hasSessionForExperience = Boolean(
+    session &&
+      ((experience === "participants" && session.role === "user") ||
+        (experience === "clinics" && session.role === "clinic")),
+  );
+
+  function navigateToProfileOrLogin() {
+    setView(hasSessionForExperience ? "profile" : "login");
+  }
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view, experience]);
+
+  useEffect(() => {
+    if (view === "profile" && !hasSessionForExperience) {
+      setView("login");
+    }
+  }, [view, hasSessionForExperience]);
 
   useEffect(() => {
     const navigationState: StoredNavigationState = {
@@ -479,7 +495,7 @@ export default function App() {
   }, []);
 
   async function handleAuthenticate(payload: {
-    mode: "sign-in" | "create";
+    mode: "sign-in" | "create" | "reset-password";
     email: string;
     password: string;
     rememberEmail: boolean;
@@ -487,8 +503,30 @@ export default function App() {
     try {
       setAuthLoading(true);
       setAuthError(null);
+      setAuthSuccess(null);
 
       const role = experience === "clinics" ? "clinic" : "user";
+
+      if (payload.mode === "reset-password") {
+        const resetResponse = await resetPassword(
+          payload.email,
+          payload.password,
+          role,
+        );
+        setAuthSuccess(
+          resetResponse.message ||
+            "Password reset successful. Please sign in with your new password.",
+        );
+
+        if (payload.rememberEmail) {
+          window.localStorage.setItem(REMEMBERED_EMAIL_KEY, payload.email);
+        } else {
+          window.localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+        }
+        setView("login");
+        return;
+      }
+
       const response =
         payload.mode === "create"
           ? await registerUser(payload.email, payload.password, role)
@@ -528,6 +566,7 @@ export default function App() {
   function handleLogout() {
     setSession(null);
     persistSession(null);
+    setAuthSuccess(null);
     // Return to home after logout
     setView("home");
   }
@@ -553,8 +592,7 @@ export default function App() {
     return (
       <HomePage
         selectedExperience={experience}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
-        onNavigateLogin={() => setView("login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateHome={() => setView("home")}
@@ -568,7 +606,7 @@ export default function App() {
       <LoginPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -576,6 +614,7 @@ export default function App() {
         onAuthenticate={handleAuthenticate}
         isLoading={authLoading}
         errorMessage={authError}
+        successMessage={authSuccess}
       />
     );
   }
@@ -585,7 +624,7 @@ export default function App() {
       <ClinicLoginPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -593,6 +632,7 @@ export default function App() {
         onAuthenticate={handleAuthenticate}
         isLoading={authLoading}
         errorMessage={authError}
+        successMessage={authSuccess}
       />
     );
   }
@@ -603,7 +643,7 @@ export default function App() {
         authToken={session?.token ?? null}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("trials")}
         onNavigateLogin={() => setView("login")}
@@ -619,7 +659,7 @@ export default function App() {
       <ClinicProfileSetupPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -634,7 +674,7 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateFindTrials={() => setView("trials")}
@@ -654,7 +694,7 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -668,7 +708,7 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateFindTrials={() => setView("trials")}
@@ -686,7 +726,7 @@ export default function App() {
       <ClinicAllTrialsPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateAddTrials={() => setView("clinic-trial-card")}
@@ -704,7 +744,7 @@ export default function App() {
       <ClinicTrialCardPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSubmitTrial={() => setView("all-trials")}
@@ -720,7 +760,7 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -734,7 +774,7 @@ export default function App() {
         authToken={session?.token}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateMoreDetails={() => setView("analytics-result-uses")}
@@ -752,7 +792,7 @@ export default function App() {
       <ClinicAnalyticsPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateMoreDetails={(trialId) => {
@@ -770,7 +810,7 @@ export default function App() {
         label="Study result uses details (to be filled in by clinic)"
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onSelectExperience={setExperience}
@@ -783,7 +823,7 @@ export default function App() {
       <ClinicMoreAnalyticsPage
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
-        onNavigateProfile={() => setView(session ? "profile" : "login")}
+        onNavigateProfile={navigateToProfileOrLogin}
         onNavigateAnalytics={() => setView("analytics")}
         onNavigateAllTrials={() => setView("all-trials")}
         onNavigateBack={() => setView(clinicMoreBackView)}
@@ -797,10 +837,11 @@ export default function App() {
       label={pageLabel}
       selectedExperience={experience}
       onNavigateHome={() => setView("home")}
-      onNavigateProfile={() => setView(session ? "profile" : "login")}
+      onNavigateProfile={navigateToProfileOrLogin}
       onNavigateAnalytics={() => setView("analytics")}
       onNavigateAllTrials={() => setView("all-trials")}
       onSelectExperience={setExperience}
     />
   );
 }
+
