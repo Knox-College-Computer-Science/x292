@@ -11,7 +11,7 @@ type LoginPageProps = {
   onSelectExperience: (experience: "clinics" | "participants") => void;
   rememberedEmail?: string;
   onAuthenticate: (payload: {
-    mode: "sign-in" | "create";
+    mode: "sign-in" | "create" | "reset-password";
     email: string;
     password: string;
     organization?: string;
@@ -19,6 +19,7 @@ type LoginPageProps = {
   }) => void | Promise<void>;
   isLoading?: boolean;
   errorMessage?: string | null;
+  successMessage?: string | null;
 };
 
 export default function LoginPage({
@@ -32,6 +33,7 @@ export default function LoginPage({
   onAuthenticate,
   isLoading,
   errorMessage,
+  successMessage,
 }: LoginPageProps) {
   return (
     <main className="login-page">
@@ -51,6 +53,7 @@ export default function LoginPage({
           onAuthenticate={onAuthenticate}
           isLoading={isLoading}
           errorMessage={errorMessage}
+          successMessage={successMessage}
         />
       </section>
     </main>

@@ -3,7 +3,7 @@
 type ClinicLoginComponentProps = {
   rememberedEmail?: string;
   onAuthenticate: (payload: {
-    mode: "sign-in" | "create";
+    mode: "sign-in" | "create" | "reset-password";
     email: string;
     password: string;
     organization?: string;
@@ -11,6 +11,7 @@ type ClinicLoginComponentProps = {
   }) => void | Promise<void>;
   isLoading?: boolean;
   errorMessage?: string | null;
+  successMessage?: string | null;
 };
 
 export default function ClinicLoginComponent(props: ClinicLoginComponentProps) {

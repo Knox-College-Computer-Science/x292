@@ -51,6 +51,10 @@ export type AuthResponse = {
   profile_completed: boolean;
 };
 
+export type MessageResponse = {
+  message: string;
+};
+
 export type UserProfile = {
   id: string;
   email: string;
@@ -162,6 +166,17 @@ export function loginUser(email: string, password: string) {
   return request<AuthResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
+  });
+}
+
+export function resetPassword(
+  email: string,
+  newPassword: string,
+  role: "user" | "clinic",
+) {
+  return request<MessageResponse>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ email, new_password: newPassword, role }),
   });
 }
 

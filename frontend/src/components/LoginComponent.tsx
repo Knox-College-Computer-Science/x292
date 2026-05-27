@@ -1,6 +1,8 @@
-﻿import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import "./LoginComponent.css";
 import Tooltip from "./Tooltip";
+import owlFull from "../assets/owl-full.png";
+import bearFull from "../assets/bear-full.png";
 
 type LoginMode = "sign-in" | "create";
 
@@ -32,12 +34,20 @@ export default function LoginComponent({
   const [rememberEmail, setRememberEmail] = useState(Boolean(rememberedEmail));
 
   const isClinic = role === "clinic";
+  const loginMascot = isClinic ? owlFull : bearFull;
   const titleText = useMemo(() => {
     if (isClinic) {
-      return mode === "sign-in" ? "Clinic sign in" : "Create clinic account";
+      return mode === "sign-in" ? "Clinic Sign In" : "Create Clinic Account";
     }
-    return mode === "sign-in" ? "Sign in" : "Create your account";
+    return mode === "sign-in" ? "Participant Sign In" : "Create Your Account";
   }, [isClinic, mode]);
+
+  const displayTitleText = useMemo(() => {
+    if (mode === "sign-in") {
+      return isClinic ? "Clinic\nSign In" : "Participant\nSign In";
+    }
+    return titleText;
+  }, [isClinic, mode, titleText]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,9 +62,15 @@ export default function LoginComponent({
 
   return (
     <section className="login-component" aria-label={`${titleText} panel`}>
-      <h2 className="login-title">{titleText}</h2>
-
-      <div className="login-logo-placeholder" aria-hidden="true" />
+      <div className="login-header">
+        <h2 className="login-title">{displayTitleText}</h2>
+        <img
+          className="login-logo-placeholder"
+          src={loginMascot}
+          alt=""
+          aria-hidden="true"
+        />
+      </div>
 
       <form
         className="login-form"

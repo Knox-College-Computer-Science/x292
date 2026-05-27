@@ -15,12 +15,22 @@ class UserLogin(BaseModel):
     password: str
 
 
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+    new_password: str = Field(min_length=8)
+    role: Optional[str] = None
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user_id: str
     role: str
     profile_completed: bool
+
+
+class MessageResponse(BaseModel):
+    message: str
 
 
 class UserProfileBase(BaseModel):
