@@ -114,3 +114,9 @@ def require_admin(current_user: models.User = Depends(get_current_user)) -> mode
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
+
+#requirement that a user is a clinic (currently unused)
+def require_clinic(current_user: models.User = Depends(get_current_user)) -> models.User:
+    if current_user.role not in ("clinic", "admin"):
+        raise HTTPException(status_code=403, detail="Clinic access required")
+    return current_user
