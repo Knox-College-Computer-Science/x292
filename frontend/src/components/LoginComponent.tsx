@@ -18,6 +18,7 @@ type LoginComponentProps = {
   }) => void | Promise<void>;
   isLoading?: boolean;
   errorMessage?: string | null;
+  successMessage?: string | null;
 };
 
 export default function LoginComponent({
@@ -26,6 +27,7 @@ export default function LoginComponent({
   onAuthenticate,
   isLoading = false,
   errorMessage = null,
+  successMessage = null,
 }: LoginComponentProps) {
   const [mode, setMode] = useState<LoginMode>("sign-in");
   const [email, setEmail] = useState(rememberedEmail ?? "");
@@ -141,6 +143,9 @@ export default function LoginComponent({
 
         {errorMessage ? (
           <p className="login-error-message">{errorMessage}</p>
+        ) : null}
+        {successMessage ? (
+          <p className="login-success-message">{successMessage}</p>
         ) : null}
 
         <div className="login-actions">

@@ -1,4 +1,5 @@
 ﻿const API_URL = "http://127.0.0.1:8000";
+const DEPLOYED_API_URL = import.meta.env.VITE_API_URL ?? API_URL;
 
 export type ApiRequestOptions = {
   token?: string;
@@ -18,7 +19,7 @@ async function request<T>(
     headers.Authorization = `Bearer ${options.token}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${DEPLOYED_API_URL}${path}`, {
     ...init,
     headers,
   });

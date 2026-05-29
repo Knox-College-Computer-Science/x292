@@ -1,4 +1,6 @@
 ﻿from fastapi import FastAPI
+import os
+
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
@@ -9,6 +11,13 @@ from .routes import trials as trials_router
 from .routes import users as users_router
 
 Base.metadata.create_all(bind=engine)
+
+DEFAULT_CORS_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", DEFAULT_CORS_ORIGINS).split(",")
+    if origin.strip()
+]
 
 
 def _ensure_sqlite_columns() -> None:
@@ -54,13 +63,14 @@ def _ensure_sqlite_columns() -> None:
     ensure_table_columns(models.TrialInteraction.__table__)
 
 
-_ensure_sqlite_columns()
+if engine.dialect.name == "sqlite":
+    _ensure_sqlite_columns()
 
 app = FastAPI(title="Class Project API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
