@@ -32,7 +32,7 @@ export default function HomePage({
         onSelectExperience={onSelectExperience}
       />
       <HomeHero selectedExperience={selectedExperience} />
-      <HomeCtaSection />
+      <HomeCtaSection onJoin={onNavigateProfile} />
     </main>
   );
 }

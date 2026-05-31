@@ -1,8 +1,8 @@
 .help-section {
   position: relative;
-  margin-top: 259px;
+  margin-top: clamp(96px, 18vw, 259px);
   width: 100%;
-  height: 1116px;
+  min-height: 1116px;
   overflow: hidden;
   background:
     linear-gradient(var(--main-overlay), var(--main-overlay)),
@@ -11,12 +11,12 @@
 
 .help-title {
   position: relative;
-  width: 1042px;
+  width: min(1042px, 92vw);
   margin: 90px auto 0;
   text-align: center;
-  font-size: 128px;
+  font-size: clamp(52px, 9vw, 128px);
   font-weight: 700;
-  line-height: 128px;
+  line-height: 1;
   letter-spacing: 1px;
   color: var(--text-strong);
 }
@@ -24,9 +24,15 @@
 .atlas-button.join-button {
   position: relative;
   display: block;
-  width: 466px;
-  height: 187px;
-  min-height: 187px;
+  width: min(466px, 82vw);
+  height: clamp(96px, 14vw, 187px);
+  min-height: 96px;
   margin: 60px auto 0;
-  font-size: 84px;
+  font-size: clamp(42px, 7vw, 84px);
+}
+
+@media (max-width: 760px) {
+  .help-section {
+    min-height: 720px;
+  }
 }

@@ -1,17 +1,19 @@
 .home-hero-stage {
   margin-top: -55px;
   width: 100%;
-  height: 928px;
+  min-height: 928px;
   display: grid;
   grid-template-columns: 1fr;
   position: relative;
+  overflow: hidden;
 }
 
 .hero-box {
   grid-area: 1 / 1;
-  width: 745px;
+  width: min(745px, 52vw);
   height: 928px;
-  margin-left: 607px;
+  justify-self: end;
+  margin-right: max(6vw, calc((100vw - 1200px) / 2));
   padding: 0;
   position: relative;
   overflow: hidden;
@@ -30,15 +32,49 @@
 .hero-title {
   grid-area: 1 / 1;
   margin: 0;
-  margin-left: 125px;
-  margin-top: 205px;
-  font-size: 200px;
+  align-self: start;
+  justify-self: center;
+  width: min(1200px, 92vw);
+  padding-top: 205px;
+  font-size: clamp(84px, 13vw, 200px);
   font-weight: 700;
-  line-height: 200px;
+  line-height: 1;
   letter-spacing: 1px;
   color: var(--on-brand);
   white-space: normal;
-  max-width: 1200px;
   position: relative;
   z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .home-hero-stage {
+    min-height: 700px;
+  }
+
+  .hero-box {
+    width: 72vw;
+    height: 700px;
+    margin-right: 0;
+    opacity: 0.9;
+  }
+
+  .hero-title {
+    padding-top: 180px;
+  }
+}
+
+@media (max-width: 560px) {
+  .home-hero-stage {
+    min-height: 540px;
+  }
+
+  .hero-box {
+    width: 100%;
+    height: 540px;
+  }
+
+  .hero-title {
+    padding-top: 160px;
+    text-align: center;
+  }
 }

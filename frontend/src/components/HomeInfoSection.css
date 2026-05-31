@@ -1,14 +1,15 @@
 .info-section {
   position: relative;
   width: 100%;
-  height: 468px;
+  min-height: 468px;
   margin-top: 47px;
+  padding: 0 4vw;
 }
 
 .info-box {
-  width: 1128px;
-  height: 468px;
-  margin-left: 156px;
+  width: min(1128px, 100%);
+  min-height: 468px;
+  margin: 0 auto;
   padding-top: 39px;
   border-radius: 8px;
   background: var(--main-color);
@@ -16,7 +17,10 @@
 
 .info-headings {
   display: flex;
+  justify-content: space-between;
+  gap: 32px;
   margin-top: 0;
+  padding: 0 clamp(28px, 5vw, 54px);
 }
 
 .info-heading {
@@ -28,9 +32,27 @@
 }
 
 .features-heading {
-  margin-left: 54px;
+  margin-left: 0;
 }
 
 .privacy-heading {
-  margin-left: 270px;
+  margin-left: 0;
+}
+
+@media (max-width: 760px) {
+  .info-section {
+    min-height: 0;
+  }
+
+  .info-box {
+    min-height: 360px;
+  }
+
+  .info-headings {
+    flex-direction: column;
+  }
+
+  .info-heading {
+    font-size: 36px;
+  }
 }
