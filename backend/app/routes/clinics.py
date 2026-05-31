@@ -13,7 +13,7 @@ The clinic_id from this registration is linked to trials in trials.py.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import get_db
-from ..auth import get_current_user
+from ..auth import require_clinic
 from .. import models, schemas
 
 router = APIRouter()
@@ -22,7 +22,7 @@ router = APIRouter()
 @router.post("/clinics", response_model=schemas.ClinicProfileResponse, status_code=201)
 def register_clinic(
     payload: schemas.ClinicProfileCreate,
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(require_clinic),
     db: Session = Depends(get_db)
 ):
     """
@@ -48,15 +48,12 @@ def get_clinic(clinic_id: str, db: Session = Depends(get_db)):
 def update_clinic(
     clinic_id: str,
     payload: schemas.ClinicProfileCreate,
-    current_user: models.User = Depends(get_current_user),
+    current_user: models.User = Depends(require_clinic),
     db: Session = Depends(get_db)
 ):
     clinic = db.query(models.ClinicProfile).filter(models.ClinicProfile.id == clinic_id).first()
     if not clinic:
         raise HTTPException(status_code=404, detail="Clinic not found")
-    if current_user.role not in ("admin", "clinic"):
-        raise HTTPException(status_code=403, detail="Not authorized")
-
     for field, value in payload.model_dump().items():
         setattr(clinic, field, value)
     db.commit()

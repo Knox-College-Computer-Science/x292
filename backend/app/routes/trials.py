@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
-from ..auth import get_current_user, get_current_user_optional, require_admin
+from ..auth import get_current_user, get_current_user_optional, require_admin, require_clinic
 from ..database import get_db
 from ..services.cleaner import clean_trial
 from ..services.clinical_api import fetch_trials
@@ -14,6 +14,17 @@ router = APIRouter(prefix="/trials", tags=["trials"])
 
 
 DEFAULT_CONDITION = "diabetes"
+
+
+@router.post("/", response_model=schemas.TrialResponse, status_code=201)
+def create_clinic_trial(
+    payload: schemas.TrialCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_clinic),
+):
+    if current_user.role == "clinic" and not payload.sponsor:
+        payload.sponsor = current_user.email
+    return crud.create_trial(db, payload)
 
 
 def _effective_condition(condition: Optional[str], current_user: Optional[models.User]) -> str:

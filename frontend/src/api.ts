@@ -124,6 +124,35 @@ export type Trial = {
   match_reasons?: string[];
 };
 
+export type ClinicProfileCreate = {
+  clinic_name: string;
+  logo_url?: string | null;
+  contact_person?: string | null;
+  contact_email: string;
+  contact_phone?: string | null;
+  location: string;
+  sponsor_institution?: string | null;
+};
+
+export type ClinicProfile = ClinicProfileCreate & {
+  id: string;
+  created_at: string;
+};
+
+export type TrialCreate = {
+  title: string;
+  condition: string;
+  location: string;
+  study_type?: string | null;
+  study_description?: string | null;
+  recruitment_status?: string;
+  compensation?: string | null;
+  time_commitment?: string | null;
+  start_date?: string | null;
+  remote_eligible?: boolean;
+  sponsor?: string | null;
+};
+
 export type TrialQuery = {
   condition?: string;
   location?: string;
@@ -210,6 +239,28 @@ export function updateMyPrivacySettings(token: string, matchingFields: Record<st
     {
       method: "PUT",
       body: JSON.stringify({ matching_fields_enabled: matchingFields }),
+    },
+    { token }
+  );
+}
+
+export function createClinicProfile(token: string, payload: ClinicProfileCreate) {
+  return request<ClinicProfile>(
+    "/clinics",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+    { token }
+  );
+}
+
+export function createTrial(token: string, payload: TrialCreate) {
+  return request<Trial>(
+    "/trials/",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
     },
     { token }
   );

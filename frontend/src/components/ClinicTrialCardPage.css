@@ -25,3 +25,13 @@
 .clinic-trial-card-submit {
   margin-top: 20px;
 }
+
+.clinic-trial-card-save-message {
+  width: min(680px, 100%);
+  margin: 18px 0 0;
+  color: var(--danger-color);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}

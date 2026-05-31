@@ -16,6 +16,10 @@ export default function ClinicTrialCard() {
           <input type="text" name="studyType" />
         </div>
         <div className="clinic-trial-card-row">
+          <span className="clinic-trial-card-label">Condition</span>
+          <input type="text" name="condition" />
+        </div>
+        <div className="clinic-trial-card-row">
           <span className="clinic-trial-card-label">[00/00/0000]</span>
           <input type="text" name="date" />
         </div>

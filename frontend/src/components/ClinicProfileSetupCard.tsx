@@ -1,6 +1,12 @@
 import "./ClinicProfileSetupCard.css";
 
-export default function ClinicProfileSetupCard() {
+type ClinicProfileSetupCardProps = {
+  defaultContactEmail?: string | null;
+};
+
+export default function ClinicProfileSetupCard({
+  defaultContactEmail,
+}: ClinicProfileSetupCardProps) {
   return (
     <section
       className="clinic-profile-card"
@@ -10,6 +16,22 @@ export default function ClinicProfileSetupCard() {
         <label>
           <span>Organization Name</span>
           <input type="text" name="organizationName" />
+        </label>
+        <label>
+          <span>Contact Email</span>
+          <input
+            type="email"
+            name="contactEmail"
+            defaultValue={defaultContactEmail ?? ""}
+          />
+        </label>
+        <label>
+          <span>Contact Person</span>
+          <input type="text" name="contactPerson" />
+        </label>
+        <label>
+          <span>Contact Phone</span>
+          <input type="text" name="contactPhone" />
         </label>
         <label>
           <span>Location</span>

@@ -657,6 +657,8 @@ export default function App() {
   if (view === "profile" && experience === "clinics") {
     return (
       <ClinicProfileSetupPage
+        authToken={session?.token ?? null}
+        accountEmail={session?.email ?? null}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
         onNavigateProfile={navigateToProfileOrLogin}
@@ -742,6 +744,7 @@ export default function App() {
   if (view === "clinic-trial-card" && experience === "clinics") {
     return (
       <ClinicTrialCardPage
+        authToken={session?.token ?? null}
         selectedExperience={experience}
         onNavigateHome={() => setView("home")}
         onNavigateProfile={navigateToProfileOrLogin}
