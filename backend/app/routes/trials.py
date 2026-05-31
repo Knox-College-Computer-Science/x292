@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
-from ..auth import get_current_user, get_current_user_optional
+from ..auth import get_current_user, get_current_user_optional, require_admin
 from ..database import get_db
 from ..services.cleaner import clean_trial
 from ..services.clinical_api import fetch_trials
@@ -270,6 +270,9 @@ def get_user_saved_trials(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
+
+    #prevents users without admin from knowing what trails another user has saved based on user_id
+    current_user: models.User = Depends(require_admin),
 ):
     trials = crud.get_saved_trials(db, user_id, skip, limit)
     return [_trial_to_dict(trial) for trial in trials]
@@ -281,6 +284,7 @@ def get_user_passed_trials(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_admin),
 ):
     trials = crud.get_passed_trials(db, user_id, skip, limit)
     return [_trial_to_dict(trial) for trial in trials]
