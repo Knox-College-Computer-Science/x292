@@ -19,7 +19,9 @@
   width: 78px;
   height: 78px;
   margin-top: 18px;
-  background: var(--accent-color);
+  object-fit: contain;
+  object-position: center;
+  background: transparent;
 }
 
 .login-form {

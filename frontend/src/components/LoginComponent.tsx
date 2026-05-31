@@ -1,8 +1,8 @@
 import { FormEvent, useMemo, useState } from "react";
 import "./LoginComponent.css";
 import Tooltip from "./Tooltip";
-import owlFull from "../assets/owl-full.png";
-import bearFull from "../assets/bear-full.png";
+import owlIcon from "../assets/owl.png";
+import bearIcon from "../assets/bear.png";
 
 type LoginMode = "sign-in" | "create";
 
@@ -36,7 +36,7 @@ export default function LoginComponent({
   const [rememberEmail, setRememberEmail] = useState(Boolean(rememberedEmail));
 
   const isClinic = role === "clinic";
-  const loginMascot = isClinic ? owlFull : bearFull;
+  const loginMascot = isClinic ? owlIcon : bearIcon;
   const titleText = useMemo(() => {
     if (isClinic) {
       return mode === "sign-in" ? "Clinic Sign In" : "Create Clinic Account";
