@@ -57,8 +57,7 @@ export default function ClinicProfileSetupPage({
         </p>
         <ClinicProfileSetupCard />
         <button
-          type="submit"
-          form="clinic-profile-setup-form"
+          type="button"
           className="atlas-button atlas-button-variant-3 clinic-profile-submit-button"
           onClick={onNavigateAllTrials}
         >

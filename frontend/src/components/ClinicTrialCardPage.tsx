@@ -41,8 +41,7 @@ export default function ClinicTrialCardPage({
         </h1>
         <ClinicTrialCard />
         <button
-          type="submit"
-          form="clinic-trial-card-form"
+          type="button"
           className="atlas-button atlas-button-variant-3 clinic-trial-card-submit"
           onClick={onSubmitTrial}
         >
